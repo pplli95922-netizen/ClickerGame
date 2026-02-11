@@ -1,0 +1,289 @@
+/* Кнопка закрытия инвентаря поверх всего */
+#inventoryModal .close-btn,
+#inventoryModal .modal-close,
+#inventoryModal .inv-close,
+#inventoryModal .close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 9999;
+  pointer-events: auto;
+}
+
+#inventoryModal .full-image{
+  pointer-events: none;
+}
+
+/* Калибровка сетки 5x7 под фон */
+#inventoryModal{
+  --grid-left: 7.5px;
+  --grid-top: 5.5px;
+
+  --cell: 55.2px;
+  --gap: 9px;
+}
+
+/* Сетка слотов — строго фиксированный размер */
+#inventoryModal .inv-grid{
+  position: absolute;
+  left: var(--grid-left);
+  top: var(--grid-top);
+  z-index: 5;
+
+  display: grid;
+  grid-template-columns: repeat(5, var(--cell));
+  grid-template-rows: repeat(7, var(--cell));
+  gap: var(--gap);
+
+  width: calc(5 * var(--cell) + 4 * var(--gap));
+  height: calc(7 * var(--cell) + 6 * var(--gap));
+}
+
+/* Слот: пустой — тёмный, заполненный — красится редкостью */
+#inventoryModal .inv-slot{
+  width: var(--cell);
+  height: var(--cell);
+  border-radius: 12px;
+  background: rgba(0,0,0,0.55); /* фон для ПУСТЫХ */
+  border: 1px solid rgba(255,255,255,0.10);
+  overflow: hidden;
+}
+
+#inventoryModal .inv-slot.filled{
+  background: unset; /* не мешаем редкости */
+  box-shadow: none;
+}
+
+/* НЕ режем сетку слотов (иначе “пропадают”) */
+#inventoryModal{
+  overflow: visible;
+}
+
+#inventoryModal .inv-wrap{
+  overflow: visible;   /* если было hidden — слоты обрежутся */
+  max-height: none;    /* если было max-height — низ обрежется */
+}
+
+/* Сетка ниже */
+#inventoryModal .inv-grid{
+  z-index: 5;
+}
+
+/* Панель/карточка деталей выше */
+#inventoryModal .inv-details,
+#inventoryModal #invWeaponCard{
+  position: relative;
+  z-index: 50;
+  pointer-events: auto;
+}
+
+/* Кнопка точно кликабельна */
+#inventoryModal #invEquipBtn{
+  position: relative;
+  z-index: 60;
+  pointer-events: auto;
+}
+
+#inventoryModal .inv-slot.rarity-common{
+  background: linear-gradient(135deg, rgba(120,120,120,0.45), rgba(60,60,60,0.75));
+}
+#inventoryModal .inv-slot.rarity-uncommon{
+  background: linear-gradient(135deg, rgba(90,200,120,0.55), rgba(30,90,50,0.85));
+}
+#inventoryModal .inv-slot.rarity-rare{
+  background: linear-gradient(135deg, rgba(80,140,220,0.6), rgba(25,55,120,0.9));
+}
+#inventoryModal .inv-slot.rarity-epic{
+  background: linear-gradient(135deg, rgba(180,90,255,0.7), rgba(70,20,120,0.95));
+}
+#inventoryModal .inv-slot.rarity-legendary{
+  background: linear-gradient(135deg, rgba(255,180,70,0.85), rgba(120,60,10,1));
+}
+
+#inventoryModal .inv-slot .slot-img{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 78%;
+  height: 78%;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+  pointer-events: none;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.55));
+}
+
+.inv-item{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 12px 12px;
+  border-radius: 14px;
+
+  background: rgba(0,0,0,0.65);
+  border: 1px solid rgba(180,200,255,0.35);
+  color: #fff;
+}
+
+.inv-left{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inv-title{
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.inv-meta{
+  opacity: 0.9;
+  font-size: 13px;
+}
+
+.inv-eq{
+  opacity: 0.85;
+  font-size: 12px;
+}
+
+.inv-btn{
+  border: none;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(180deg, #2d7cff, #1a4fb8);
+}
+
+.inv-btn:active{
+  transform: scale(0.98);
+}
+
+.inv-wrap{
+  display:flex;
+  gap:14px;
+}
+
+.inv-grid{
+  width: 100%;
+  height: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+
+  gap: 10px; /* меньше gap → больше слоты */
+}
+
+.inv-slot{
+  position: relative;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.55); /* для пустых */
+  overflow: hidden;
+}
+
+.inv-slot.filled{
+  background: none; /* 🔥 ЭТО КЛЮЧ */
+}
+
+.inv-slot .slot-title{
+  position:absolute;
+  left:10px;
+  right:10px;
+  bottom:10px;
+  font-weight:900;
+  font-size:13px;
+  text-shadow:0 2px 4px rgba(0,0,0,.8);
+  opacity:0.95;
+}
+
+.inv-slot .slot-sub{
+  position:absolute;
+  left:10px;
+  right:10px;
+  bottom:28px;
+  font-size:12px;
+  opacity:0.85;
+}
+
+.inv-details{
+  width:42%;
+  min-width: 160px;
+}
+
+.inv-title-top{
+  position: absolute;
+  left: 0px;
+  top: -45px;          /* подними/опусти */
+  z-index: 100;
+  font-weight: 900;
+  font-size: 22px;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+}
+
+/* Контент инвентаря поверх фона */
+.inv-wrap{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 80px;
+  width: 92%;
+  max-height: calc(100% - 140px);
+  overflow: hidden;
+  z-index: 20;
+}
+
+.inv-slot.selected::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:12px;
+  border:2px solid rgba(255,255,255,0.9);
+  pointer-events:none;
+}
+
+.slot-level{
+  position: absolute;
+  bottom: 0px;   /* было 6px → ниже */
+  right: 6px;
+  left: auto;
+
+  font-size: 12px;
+  font-weight: 900;
+  color: #fff;
+
+  text-shadow: 0 2px 4px rgba(0,0,0,0.85);
+  pointer-events: none;
+}
+
+/* Фон инвентаря должен быть абсолютным, чтобы не выталкивать контент */
+.full-image{
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.full-modal{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.full-content{
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.full-image{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

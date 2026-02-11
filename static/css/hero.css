@@ -1,0 +1,79 @@
+.hero{
+  position: absolute;
+  left: 0;
+
+  --heroShiftY: 0px;
+  transform: translateX(var(--heroShiftX, -50%)) scale(1.7) translateY(var(--heroShiftY));
+
+  transform-origin: bottom center;
+
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  image-rendering: pixelated;
+}
+
+.hero--idle{
+  width: 288px;
+  height: 128px;
+
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: contain;
+
+  image-rendering: pixelated;
+
+  --heroShiftY: 34px;
+}
+
+
+.hero--atk{
+  width: 288px;
+  height: 128px;
+
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: contain;
+
+  image-rendering: pixelated;
+
+  --heroShiftY: 34px;
+}
+
+
+.hero-anchor{
+  position: absolute;
+  bottom: 610px;   /* где стоит на земле */
+  left: 30%;
+  width: 0;
+  height: 0;
+}
+
+.hero {
+  z-index: 20;
+}
+
+.hero--run{
+  width: 288px;
+  height: 128px;
+
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: contain;
+
+  image-rendering: pixelated;
+
+  --heroShiftY: 34px; /* если нужно — потом подправим */
+}
+
+.hero--hit{
+  width: 288px;
+  height: 128px;
+
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: contain;
+
+  image-rendering: pixelated;
+
+  --heroShiftY: 34px;
+}

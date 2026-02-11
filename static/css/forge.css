@@ -1,0 +1,649 @@
+.forge-img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@keyframes forgePulse {
+  0%   { box-shadow: 0 0 18px rgba(255,120,0,0.6); }
+  50%  { box-shadow: 0 0 28px rgba(255,160,40,0.9); }
+  100% { box-shadow: 0 0 18px rgba(255,120,0,0.6); }
+}
+
+.craft-btn {
+  animation: forgePulse 2.2s infinite ease-in-out;
+}
+
+.forge-hud{
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 12;
+
+  width: 170px;
+  padding: 10px 10px 8px;
+  border-radius: 14px;
+
+  background: rgba(10, 8, 6, 0.70);
+  border: 1px solid rgba(255, 190, 90, 0.45);
+
+  box-shadow:
+    0 10px 22px rgba(0,0,0,0.55),
+    0 0 18px rgba(255,120,0,0.22);
+
+  backdrop-filter: blur(4px);
+}
+
+.forge-hud__title{
+  font-weight: 900;
+  font-size: 13px;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.85);
+  margin-bottom: 8px;
+}
+
+.forge-hud__bar{
+  height: 10px;
+  width: 100%;
+  border-radius: 999px;
+  overflow: hidden;
+
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255, 190, 90, 0.35);
+}
+
+.forge-hud__fill{
+  height: 100%;
+  width: 0%;
+
+  background: linear-gradient(90deg, #ffcc66, #ff7a18, #c43b00);
+  box-shadow: 0 0 14px rgba(255, 120, 0, 0.65);
+
+  transition: width 0.25s ease;
+}
+
+.forge-hud__meta{
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.85);
+  text-shadow: 0 2px 6px rgba(0,0,0,0.75);
+}
+
+.forge-hud__res{
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.forge-hud__res-item{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 4px 8px;
+  border-radius: 999px;
+
+  font-weight: 900;
+  font-size: 12px;
+  color: #fff;
+
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,190,90,0.25);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35);
+}
+
+.forge-hud__ico{
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+}
+
+/* Кнопка под forge-hud, но НЕ внутри */
+.forge-upgrade-outside{
+  position: static;
+  left: 12px;
+  top: 12px; /* базовая точка */
+  z-index: 12;
+
+  width: 100%; /* совпадает с forge-hud */
+  height: 38px;
+   margin-top: 10px;
+
+  border-radius: 14px;
+  border: 1px solid rgba(255, 190, 90, 0.55);
+
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: .6px;
+  color: #fff;
+
+  background: linear-gradient(180deg, #ffb347, #ff7a18, #c43b00);
+
+  box-shadow:
+    0 10px 22px rgba(0,0,0,0.55),
+    0 0 16px rgba(255,120,0,0.35),
+    inset 0 2px 0 rgba(255,255,255,0.25);
+
+  text-shadow: 0 2px 6px rgba(0,0,0,0.85);
+  cursor: pointer;
+
+  transition: transform .12s ease, filter .12s ease;
+}
+
+/* Нажатие */
+.forge-upgrade-outside:active{
+  transform: scale(0.97);
+  filter: brightness(1.12);
+}
+
+.forge-upgrade-outside:disabled{
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: grayscale(0.2);
+}
+
+/* Центровой дроп кузни */
+#forgeView{ position: relative; }
+
+.forge-drop{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: transparent;   /* убрали плашку */
+  border-radius: 0;
+  backdrop-filter: none;     /* ВОТ ГДЕ БЫЛА МУТЬ */
+}
+
+.forge-drop__slot{
+  width: 136px;              /* 120px картинка + рамка */
+  height: 136px;
+  border-radius: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;    /* убрали тёмную “плашку” */
+  border: 0;                  /* если хочешь — можешь вернуть тонкую рамку */
+  box-shadow: none;           /* убрали большой ореол */
+
+  backdrop-filter: none;      /* ВОТ ЭТО убирает размытие */
+}
+
+/* Картинка предмета */
+.forge-drop__img{
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 8px 10px rgba(0,0,0,0.6));
+}
+
+/* Текст под слотом */
+.forge-drop__info{
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+}
+
+.forge-drop__name{
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+}
+
+.forge-drop__meta{
+  opacity: 0.9;
+  font-size: 12px;
+}
+
+/* Кнопка "Забрать" */
+.forge-drop__take{
+  min-width: 140px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 14px;
+
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.45);
+  color: #fff;
+  font-weight: 800;
+
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.forge-drop__take:hover{
+  transform: translateY(-1px);
+  border-color: rgba(255,190,120,0.45);
+  box-shadow: 0 0 16px rgba(255,140,0,0.22);
+}
+
+.forge-drop__take:active{
+  transform: translateY(0px) scale(0.98);
+}
+
+/* ===== FIX: craftResult рисуем ВНУТРИ кузни, поверх фона ===== */
+
+/* Важно: абсолютные элементы должны якориться к modal-content */
+#forgeModal .modal-content{
+  position: relative;
+  overflow: hidden; /* чтобы ничего не вылезало на общий экран */
+}
+
+/* Фон кузни = подложка, не двигает разметку */
+#forgeModal .forge-img{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+/* Весь UI кузни поверх фона */
+#forgeModal .forge-hud,
+#forgeModal .craft-btn,
+#forgeModal #craftResult,
+#forgeModal #forgeDrop{
+  position: relative;
+  z-index: 20;
+}
+
+/* Крестик всегда поверх всего */
+#forgeModal #closeForge{
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 60;
+}
+
+/* Сам результат крафта — в центр кузни (в квадрат) */
+#forgeModal #craftResult{
+  position: absolute;
+  left: 50%;
+  top: 57%; /* подгони 55–62% чтобы ровно в твой квадрат */
+  transform: translate(-50%, -50%);
+  padding: 0;
+  z-index: 40;
+}
+
+/* Кнопка крафта — всегда внизу по центру внутри кузни */
+#forgeModal .craft-btn{
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 45;
+  width: min(92%, 520px);
+}
+
+/* ===== Forge craft result = SLOT (как в инвентаре) ===== */
+
+/* ===== Craft result в кузне = маленький слот по центру ===== */
+#forgeModal #craftResult{
+  position: absolute;
+  left: 50%;
+  top: 46.5%; /* было низко — поднимаем. Если надо: 44–48% */
+  transform: translate(-50%, -50%);
+  padding: 0;        /* убрали твой padding-bottom */
+  z-index: 40;
+}
+
+/* картинка меча меньше */
+/* Единственная рамка — это сам PNG (как в инвентаре) */
+#forgeModal #weaponImg{
+  width: 78px;
+  height: 78px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 6px 8px rgba(0,0,0,0.7));
+}
+
+/* убираем ВСЕ тексты */
+#forgeModal .weapon-info,
+#forgeModal #weaponName,
+#forgeModal #weaponAtk,
+#forgeModal #weaponMeta{
+  display: none;
+}
+
+#forgeModal #weaponCard::after{
+  content: attr(data-lvl);
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+
+  font-size: 12px;
+  font-weight: 900;
+  color: #fff;
+
+  text-shadow: 0 2px 4px rgba(0,0,0,0.85);
+  pointer-events: none;
+}
+
+.craft-btn {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+
+  width: calc(100% - 40px);
+  max-width: 390px;
+  height: 64px;
+
+  border-radius: 18px;
+  border: 2px solid rgba(255, 200, 120, 0.9);
+
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #fff;
+
+  /* 🔥 огненный металл */
+  background:
+    linear-gradient(
+      180deg,
+      #ffcc66 0%,
+      #ff9a2e 30%,
+      #ff6a00 60%,
+      #c43b00 100%
+    );
+
+  /* 🔥 свечение */
+  box-shadow:
+    0 10px 30px rgba(255, 120, 0, 0.65),
+    0 0 26px rgba(255, 90, 0, 0.85),
+    inset 0 2px 0 rgba(255,255,255,0.35),
+    inset 0 -4px 0 rgba(120,30,0,0.8);
+
+  text-shadow:
+    0 2px 0 #5a1c00,
+    0 0 12px rgba(255,200,120,0.8);
+
+  cursor: pointer;
+  z-index: 10;
+
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease;
+}
+.craft-btn:active {
+  transform: translateX(-50%) scale(0.96);
+
+  filter: brightness(1.15);
+
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.7),
+    0 0 18px rgba(255,120,0,0.8),
+    inset 0 4px 6px rgba(0,0,0,0.6);
+}
+
+/* ===== ФОН РЕДКОСТИ КАК В ИНВЕНТАРЕ (насыщенный) ===== */
+#forgeModal #weaponCard.rarity-common{
+  background: linear-gradient(135deg, rgba(120,120,120,0.45), rgba(60,60,60,0.75));
+}
+#forgeModal #weaponCard.rarity-uncommon{
+  background: linear-gradient(135deg, rgba(90,200,120,0.55), rgba(30,90,50,0.85));
+}
+#forgeModal #weaponCard.rarity-rare{
+  background: linear-gradient(135deg, rgba(80,140,220,0.6), rgba(25,55,120,0.9));
+}
+#forgeModal #weaponCard.rarity-epic{
+  background: linear-gradient(135deg, rgba(180,90,255,0.7), rgba(70,20,120,0.95));
+}
+#forgeModal #weaponCard.rarity-legendary{
+  background: linear-gradient(135deg, rgba(255,180,70,0.85), rgba(120,60,10,1));
+}
+
+/* ===== ЛУЧИ (ТОЛЬКО EPIC/LEGENDA) ===== */
+#forgeModal #weaponCard.rarity-epic::before,
+#forgeModal #weaponCard.rarity-legendary::before{
+  content: "";
+  position: absolute;
+  inset: -28px;              /* чтобы лучи выходили за слот */
+  pointer-events: none;
+  z-index: 0;
+
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.22), rgba(255,255,255,0) 55%),
+    conic-gradient(
+      from 0deg,
+      rgba(255,255,255,0.00),
+      rgba(255,255,255,0.18),
+      rgba(255,255,255,0.00),
+      rgba(255,255,255,0.14),
+      rgba(255,255,255,0.00)
+    );
+
+  filter: blur(0.2px);
+  opacity: 0.9;
+  animation: forgeRaysSpin 4.5s linear infinite;
+}
+
+/* ===== ЛУЧИ (ярче + плавный fade) — только EPIC/LEGENDA ===== */
+#forgeModal #weaponCard.rarity-epic::before,
+#forgeModal #weaponCard.rarity-legendary::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width: 220px;
+  height: 220px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  pointer-events:none;
+  z-index: 0;
+
+  /* лучи + мягкая подсветка в центре */
+  background:
+    radial-gradient(circle,
+      rgba(255,255,255,0.20) 0%,
+      rgba(255,255,255,0.00) 55%
+    ),
+    repeating-conic-gradient(
+      from 0deg,
+      rgba(255,255,255,0.00) 0deg,
+      rgba(255,255,255,0.55) 7deg,
+      rgba(255,255,255,0.00) 16deg
+    );
+
+  /* ВАЖНО: маска делает края плавными (нет “жёсткого круга”) */
+  -webkit-mask: radial-gradient(circle,
+    rgba(0,0,0,1) 0%,
+    rgba(0,0,0,1) 55%,
+    rgba(0,0,0,0.45) 70%,
+    rgba(0,0,0,0.00) 100%
+  );
+  mask: radial-gradient(circle,
+    rgba(0,0,0,1) 0%,
+    rgba(0,0,0,1) 55%,
+    rgba(0,0,0,0.45) 70%,
+    rgba(0,0,0,0.00) 100%
+  );
+
+  filter: blur(1.2px);
+  opacity: 0.95;                 /* ярче */
+  animation: forgeRaysSpin 4.5s linear infinite;
+}
+
+/* цветовая подкраска/свечение */
+#forgeModal #weaponCard.rarity-epic::before{
+  box-shadow: 0 0 36px rgba(190,120,255,0.65);
+}
+
+#forgeModal #weaponCard.rarity-legendary::before{
+  box-shadow: 0 0 44px rgba(255,205,90,0.75);
+  opacity: 1;                    /* легендарка чуть ярче */
+}
+
+@keyframes forgeRaysSpin{
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* чтобы меч был поверх лучей */
+#forgeModal #weaponCard{ position: relative; 
+ border-radius: 12px;  /* как в инвентаре */
+  overflow: hidden;}
+#forgeModal #weaponImg{ position: relative; z-index: 2; }
+#forgeModal #weaponCard::after{ z-index: 3; } /* LVL поверх */
+
+/* === FIX BLUE TAP / ACTIVE COLOR (Telegram / Mobile) === */
+button,
+button:focus,
+button:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== Craft FX (sprite 960x576 = 5x3 frames of 192) ===== */
+#forgeModal #forgeEffect{
+  position: absolute;
+  left: 50%;
+  top: 46.5%;                /* как у craftResult */
+  transform: translate(-50%, -50%) scale(0.65);
+  width: 192px;
+  height: 192px;
+  z-index: 44;               /* выше craftResult(40), ниже кнопки close(60) */
+  pointer-events: none;
+
+  background-image: url("/static/images/fx/craft_fx.png");
+  background-repeat: no-repeat;
+  background-size: 960px 768px;
+  image-rendering: pixelated;
+
+  filter: drop-shadow(0 0 10px rgba(120,255,140,0.55))
+          drop-shadow(0 0 18px rgba(120,255,140,0.35));
+}
+
+#forgeModal #forgeEffect.hidden{ display:none !important; }
+
+.skills-panel{
+  position: absolute;
+  left: 50%;
+  bottom: 15px; /* как у .bottom-menu */
+  transform: translate(-50%, calc(-100% - 0px)); /* подняли выше */
+  z-index: 25;
+
+  /* размер кнопок и расстояние */
+  --s: clamp(60px, 16vw, 84px);
+  --g: clamp(8px, 2.2vw, 12px);
+
+  display: grid;
+  grid-template-columns: repeat(5, var(--s)); /* 5 в ряд */
+  grid-auto-rows: var(--s);
+  gap: var(--g);
+
+  justify-content: center;
+  align-items: center;
+  justify-items: center;
+
+  pointer-events: auto;
+}
+
+
+
+/* square skill button */
+.skill-btn{
+   width: var(--s);
+   height: var(--s);
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 16px;
+  border: 1px solid rgba(255,120,80,.8);
+
+  font-weight: 900;
+  font-size: clamp(18px, 5vw, 26px);
+  line-height: 1;
+  color: #fff;
+
+  background: linear-gradient(180deg, #ff6a00, #c43b00);
+  box-shadow:
+    0 0 16px rgba(255,120,0,.6),
+    inset 0 2px 0 rgba(255,255,255,.25);
+
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  position: relative;
+  overflow: hidden;
+}
+/* ===== SKILL COOLDOWN FILL ===== */
+.skill-btn.cooldown::before{
+  content:"";
+  position:absolute;
+  left:0; right:0; top:0;
+  height: var(--cdp, 100%);         /* 100% -> 0% */
+  background: rgba(0,0,0,0.55);
+  pointer-events:none;
+}
+
+
+.skill-btn:active{
+  transform: scale(0.96);
+  filter: brightness(1.15);
+}
+
+.skill-btn:disabled{
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(.3);
+}
+
+/* пустые слоты (серые) */
+.skill-btn--empty{
+  border: 1px solid rgba(255,255,255,.14);
+  background: linear-gradient(180deg, rgba(70,70,70,.7), rgba(25,25,25,.9));
+  box-shadow:
+    0 0 10px rgba(0,0,0,.55),
+    inset 0 2px 0 rgba(255,255,255,.10);
+}
+
+/* Цена крафта над кнопкой */
+#forgeModal #craftCostTxt{
+  position: absolute;
+  left: 50%;
+  bottom: 104px;          /* над кнопкой крафта */
+  transform: translateX(-50%);
+  z-index: 46;
+
+  padding: 6px 10px;
+  border-radius: 12px;
+
+  font-weight: 900;
+  font-size: 13px;
+  color: rgba(255,255,255,0.92);
+  text-shadow: 0 2px 6px rgba(0,0,0,0.85);
+
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,190,90,0.25);
+}
+
+#forgeModal #craftCostTxt.craft-cost--bad{
+  border-color: rgba(255,80,80,0.55);
+  box-shadow: 0 0 16px rgba(255,80,80,0.18);
+  color: rgba(255,220,220,0.95);
+}
+
+.forge-hud__sep{
+  opacity: 0.65;
+  font-weight: 900;
+  margin: 0 -2px;
+}
+
+.forge-hud__pair{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

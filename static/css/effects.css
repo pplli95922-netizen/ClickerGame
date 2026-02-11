@@ -1,0 +1,87 @@
+.damage-float {
+  position: absolute;
+  z-index: 1100;
+  font-weight: 800;
+  font-size: 22px;
+  color: #fff;
+  text-shadow: 0 2px 0 #000, 0 0 6px rgba(0,0,0,.6);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: dmgFloat 1100ms ease-out forwards;
+}
+
+@keyframes dmgFloat {
+  from { opacity: 1; transform: translate(-50%, -50%) translateY(0) scale(1); }
+  to   { opacity: 0; transform: translate(-50%, -50%) translateY(-60px) scale(1.05); }
+}
+
+/* Ошибка связи внизу слева */
+.error-toast {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+
+  padding: 8px 12px;
+  border-radius: 10px;
+
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+
+  z-index: 9999;
+  pointer-events: none;
+
+  animation: toastUp 2s ease-out forwards;
+}
+
+/* Анимация: поднимается примерно до середины экрана и исчезает */
+@keyframes toastUp {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-50vh); /* до половины экрана */
+    opacity: 0;
+  }
+}
+
+.loot-float{
+  position: absolute;
+  z-index: 1100;
+  font-weight: 900;
+  font-size: 18px;
+  color: #fff;
+  text-shadow: 0 2px 0 #000, 0 0 6px rgba(0,0,0,.6);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: dmgFloat 2000ms ease-out forwards;
+  white-space: pre-line;
+}
+
+/* ===== Loot ticker (1 line, sequential) ===== */
+.loot-ticker{
+  position: absolute;
+  z-index: 1100;
+  font-weight: 900;
+  font-size: 18px;
+  color: #fff;
+  text-shadow: 0 2px 0 #000, 0 0 6px rgba(0,0,0,.6);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+
+  animation: lootTicker var(--lootDur, 1500ms) ease-out forwards;
+}
+
+@keyframes lootTicker {
+  from { opacity: 1; transform: translate(-50%, -50%) translateY(0); }
+  to   { opacity: 0; transform: translate(-50%, -50%) translateY(-60px); }
+}
+
+/* CRIT: красные цифры урона */
+.damage-float--crit{
+  color: #ff3b3b;
+  text-shadow: 0 2px 0 #000, 0 0 10px rgba(255,0,0,.75);
+}

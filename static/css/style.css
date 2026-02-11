@@ -1,0 +1,16 @@
+/* style.css — сборка модулей */
+@import url("./base.css?v=1");
+@import url("./scene.css?v=1");
+
+@import url("./hud.css?v=1");
+@import url("./buttons.css?v=1");
+
+@import url("./hero.css?v=1");
+
+@import url("./forge.css?v=1");
+@import url("./inventory.css?v=1");
+@import url("./item-modal.css?v=1");
+@import url("./map.css?v=1");
+
+@import url("./effects.css?v=1");
+

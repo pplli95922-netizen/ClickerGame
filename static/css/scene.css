@@ -1,0 +1,152 @@
+body{
+  margin:0;
+  overflow:hidden;
+  position:fixed;
+  inset:0;
+
+  /* чтобы “полосы” не были чёрными */
+  background: url("/static/images/dungeon-bg2.jpg") center / cover no-repeat;
+}
+
+.game-wrapper{
+  width: 430px;
+  height: 932px;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  overflow: hidden;
+  background:#000;
+
+  transform: translate(-50%, -50%) scale(var(--ui-scale, 1));
+  transform-origin: center;
+  will-change: transform;
+}
+
+
+/* moving bg wrapper */
+.bg{
+  position:absolute;
+  inset:0;
+  z-index:0;          /* ниже всего */
+  pointer-events:none;
+  overflow:hidden;
+}
+
+/* two stitched tiles */
+.bg__tile{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+
+  background-image: url("/static/images/dungeon-bg2.jpg"); /* пока твоя картинка */
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+}
+
+.scene-layer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 20%;
+  bottom: 5%;
+  pointer-events: none; /* важно — чтобы не мешал кликам */
+}
+
+.bg{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  overflow:hidden;
+}
+.bg__tile{
+  position:absolute;
+  inset:0;
+  background-image: url("/static/images/dungeon-bg2.jpg");
+  background-repeat:no-repeat;
+  background-position:center center;
+  background-size:cover;
+}
+
+.mob{
+  --mobSize: 110px;         /* твой текущий размер */
+  width: var(--mobSize);
+  height: var(--mobSize);
+
+  background-repeat:no-repeat;
+  background-position:center bottom;
+  background-size: contain;
+
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  backface-visibility: hidden;
+will-change: transform, background-image;
+
+}
+
+
+/* профиль атаки: делаем крупнее и чуть вперёд */
+.mob.mob--atk{
+  background-size: 150% auto;          /* делает атаку крупнее */
+  background-position: 30% bottom;     /* сдвиг вперёд (подгони 55–65%) */
+    transform: translateZ(0) scale(1.15) scaleX(-1);
+  transform-origin: center bottom;
+  width: calc(var(--mobSize) * 1.18);
+height: calc(var(--mobSize) * 1.18);
+margin-left: calc(var(--mobSize) * -0.14);
+
+
+}
+
+.mob--flip{
+  transform: translateZ(0) scaleX(-1);
+  transform-origin: center bottom;
+}
+
+/* REAPER: не переворачиваем как скелета */
+.mob--reaper.mob--flip{
+  transform: translateZ(0) scaleX(1);
+}
+
+/* ===== REAPER (boss lvl 5) ===== */
+.mob--reaper{
+  --mobSize: 150px;
+  background-position: center bottom;
+}
+
+/* у reaper пока нет атак-спрайтов — не увеличиваем как скелета */
+.mob--reaper.mob--atk{
+  background-size: contain;
+  background-position: center bottom;
+  transform: translateZ(0) scaleX(1);
+  transform-origin: center bottom;
+  width: var(--mobSize);
+  height: var(--mobSize);
+  margin-left: 0;
+}
+
+/* ===== PHANTOM KNIGHT (boss lvl 10) ===== */
+.mob--phantom{
+  --mobSize: 165px;
+  background-position: center bottom;
+}
+
+/* чтобы при "атаке" не раздувало как скелета (пока attack-спрайтов нет) */
+.mob--phantom.mob--atk{
+  background-size: contain;
+  background-position: center bottom;
+  transform: translateZ(0) scaleX(-1);
+  transform-origin: center bottom;
+  width: var(--mobSize);
+  height: var(--mobSize);
+  margin-left: 0;
+}
+
+/* PHANTOM: не переворачиваем (иначе бежит в другую сторону) */
+.mob--phantom.mob--flip{
+  transform: translateZ(0) scaleX(1);
+  transform-origin: center bottom;
+}

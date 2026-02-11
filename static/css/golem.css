@@ -1,0 +1,90 @@
+.golem {
+  position: absolute;
+  bottom: 295px;          /* та же “земля”, что и у героя */
+  right: 18%;             /* справа от героя */
+  
+  width: 90px;            /* ширина ОДНОГО кадра */
+  height: 64px;           /* высота кадра */
+  z-index: 10;
+
+  background-image: url("/static/images/golem-idle.png");
+  background-repeat: no-repeat;
+  background-size: 720px 64px; /* ВСЁ полотно (8 кадров × 90px) */
+
+  image-rendering: pixelated;
+
+  /* 🔴 ВАЖНО */
+  transform: translateX(-50%) scale(3.5) scaleX(-1);  /* ← вот ЭТО зеркалит */
+  
+  animation: golem-idle 1s steps(8) infinite;
+
+}
+
+@keyframes golem-idle {
+  from { background-position: 0 0; }
+  to   { background-position: -720px 0; }
+}
+
+.golem--hit{
+  width: 90px;
+  height: 64px;
+
+  background-image: url("/static/images/golem-hurt.png");
+  background-size: 360px 64px; /* 90 * 4 */
+  animation: golem-hit 0.2s steps(4) 1;
+}
+
+@keyframes golem-hit{
+  from { background-position: 0 0; }
+  to   { background-position: -360px 0; }
+}
+
+/* режим голема (как было) */
+.golem.boss--golem{
+  transform: translateX(-50%) scale(3.5) scaleX(-1);
+}
+
+/* СКЕЛЕТ */
+.golem.boss--skeleton{
+  transform: translateX(-50%) scale(1.5) scaleX(-1); /* <-- тут размер */
+}
+
+.golem{
+  overflow: hidden; /* чтобы лишнее обрезалось */
+}
+
+.golem > img{
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: auto;
+  height: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+/* когда активен скелет — никаких фоновых спрайтов голема */
+.golem.boss--skeleton{
+  background-image: none !important;
+  animation: none !important;
+}
+
+@keyframes skeleton-container-sway {
+  0%   { transform: translateX(-50%) scale(1.8) scaleX(-1) rotate(-1deg); }
+  50%  { transform: translateX(-50%) scale(1.8) scaleX(-1) rotate(1deg); }
+  100% { transform: translateX(-50%) scale(1.8) scaleX(-1) rotate(-1deg); }
+}
+
+.golem.boss--skeleton{
+  transform-origin: bottom center;
+  animation: skeleton-container-sway 6s ease-in-out infinite;
+}
+
+.damage-text{
+  position: fixed;
+  z-index: 9999;
+  color: #fff;
+  font-weight: 900;
+  pointer-events: none;
+}

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Кликер</title>
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<link rel="stylesheet" href="/static/css/style.css?v=1006">
+</head>
+<body>
+
+<div class="game-wrapper">
+  <!-- MOVING BACKGROUND -->
+  <div id="bg" class="bg">
+    <div class="bg__tile" id="bgA"></div>
+    <div class="bg__tile" id="bgB"></div>
+  </div>
+  <div id="playerNameTxt" class="player-name">Player</div>
+  <div id="bossLvlBadge" class="boss-lvl-badge">
+  <span class="boss-lvl-badge__ico">Boss</span>
+  <span class="boss-lvl-badge__txt">LVL</span>
+  <span id="bossLvlValue" class="boss-lvl-badge__val">1</span>
+</div>
+
+<div class="stats-top-right">
+<p id="coinsTxt">💰 0</p>
+
+<div class="res-item wood">
+  <span class="res-icon">🪵</span>
+  <span id="woodTxt">0</span>
+
+  <span class="res-sep">•</span>
+  <span class="res-pair">
+    <span class="ore-ico" aria-hidden="true"></span>
+    <span id="oreTxt">0</span>
+  </span>
+</div>
+
+
+    
+  </div>
+<!-- BOSS HP (только на босс-уровнях) -->
+<div id="bossTopHp" class="boss-hp-wrapper hidden">
+  <div id="bossHpLabel" class="boss-hp-text">БОСС • 0 / 0</div>
+  <div class="boss-hp-bar">
+    <div id="bossHpFill" class="boss-hp-fill"></div>
+  </div>
+</div>
+
+<div class="bottom-menu">
+  <button id="forgeBtn" class="menu-btn">⚒️ Кузница</button>
+  <button id="inventoryBtn" class="menu-btn">🎒 Инвентарь</button>
+  <button id="mapBtn" class="menu-btn">🗺️ Карта</button>
+</div>
+
+<div class="skills-panel" id="skillsPanel">
+  <button id="skillBtn" class="skill-btn" type="button">🔥</button>
+
+  <button id="skillBtn2" class="skill-btn" type="button" title="Навык 2">⚡</button>
+
+  <button class="skill-btn skill-btn--empty" type="button" disabled>3</button>
+  <button class="skill-btn skill-btn--empty" type="button" disabled>4</button>
+  <button class="skill-btn skill-btn--empty" type="button" disabled>5</button>
+  <button class="skill-btn skill-btn--empty" type="button" disabled>6</button>
+</div>
+
+<!-- КУЗНИЦА -->
+<div id="forgeModal" class="modal">
+  <div class="modal-content">
+    
+   
+    <!-- HUD кузни (сверху слева) -->
+<div class="forge-hud">
+  <div id="forgeLvlTxt" class="forge-hud__title">Кузня LVL 1</div>
+
+  <div class="forge-hud__res">
+    <div class="forge-hud__res-item">
+      <span class="forge-hud__ico">💰</span>
+      <span id="forgeCoinsTxt">0</span>
+    </div>
+
+    <div class="forge-hud__res-item">
+  <span class="forge-hud__ico">🪵</span>
+  <span id="forgeWoodTxt">0</span>
+
+  <span class="forge-hud__sep">•</span>
+  <span class="forge-hud__pair">
+    <span class="forge-hud__ico ore-ico" aria-hidden="true"></span>
+    <span id="forgeOreTxt">0</span>
+  </span>
+
+    </div>
+  </div>
+
+  <div class="forge-hud__bar">
+    <div id="forgeXpFill" class="forge-hud__fill"></div>
+  </div>
+
+  <div id="forgeXpTxt" class="forge-hud__meta">XP: 0 / 100</div>
+  <button id="forgeUpgradeBtn" class="forge-upgrade-outside" type="button">
+   ⬆️ Улучшить
+   </button>
+</div>
+<div id="craftCostTxt" class="craft-cost">Стоимость: —</div>
+
+    <button id="craftBtn" class="craft-btn">⚒️ Крафт</button>
+    
+    
+<div id="craftResult" class="craft-result hidden">
+  <div id="weaponCard" class="weapon-card rarity-common">
+    <img id="weaponImg" class="weapon-img" src="/static/images/weapons/common.png" alt="weapon">
+    <div class="weapon-info">
+      <div id="weaponName" class="weapon-name">Оружие</div>
+      <div id="weaponAtk" class="weapon-atk">+0 атаки</div>
+      <div id="weaponMeta" class="weapon-meta">lvl 0 • roll 1.00</div>
+    </div>
+  </div>
+</div>
+
+<div id="forgeEffect" class="forge-effect hidden"></div>
+
+    <button id="closeForge" class="close-btn">✕</button>
+
+    <img src="/static/images/forge.jpg?v=324" class="forge-img">
+
+    <!-- Центральный слот результата крафта -->
+<div id="forgeDrop" class="forge-drop hidden">
+  <div class="forge-drop__slot" id="forgeDropSlot">
+    <img id="forgeDropImg" class="forge-drop__img" src="" alt="">
+  </div>
+
+  <div class="forge-drop__info">
+    <div id="forgeDropName" class="forge-drop__name">Предмет</div>
+    <div id="forgeDropMeta" class="forge-drop__meta">Редкость / +атака</div>
+  </div>
+
+  <button id="forgeDropTakeBtn" class="forge-drop__take">Забрать</button>
+</div>
+
+  </div>
+</div>
+
+<div id="lootModal" class="loot-overlay hidden">
+  <div class="loot-window">
+    <div id="lootText" class="loot-text">Собрать награду:</div>
+
+    <button id="collectBtn" class="loot-btn">
+      Забрать
+    </button>
+  </div>
+</div>
+
+<div id="inventoryModal" class="full-modal">
+  <div class="full-content">
+    <button id="inventoryCloseBtn" class="close-btn">✕</button>
+
+    <img src="/static/images/inventory-bg.jpg" class="full-image">
+
+   <div class="inv-wrap">
+  <div id="invGrid" class="inv-grid"></div>
+</div>
+  </div>
+</div>
+
+
+
+<div id="mapScreen" class="fullscreen-screen">
+  <button class="screen-close" id="mapCloseBtn">✕</button>
+  <img src="/static/images/map-bg.jpg" class="screen-img">
+
+    <div id="mapToast" class="map-toast"></div>
+
+    <div class="map-panel" id="mapPanel">
+    <div class="map-panel__title">Босс</div>
+
+    <div class="map-panel__row">
+      <button id="bossLvlDown" class="map-square-btn" type="button">−</button>
+
+      <div class="map-lvl">
+        <div class="map-lvl__label">LVL</div>
+        <input id="bossLvlInput" class="map-lvl__input" type="number" min="1" step="1" value="1">
+      </div>
+
+      <button id="bossLvlUp" class="map-square-btn" type="button">+</button>
+
+      <button id="bossLvlApply" class="map-apply-btn" type="button">Применить</button>
+    </div>
+
+    <div id="bossLvlHint" class="map-panel__hint"></div>
+  </div>
+
+</div>
+
+<div id="heroAnchor" class="hero-anchor">
+  <div id="hero" class="hero hero--run"></div>
+  
+</div>
+
+<div class="scene-layer" id="scene"></div>
+</div>
+
+<!-- ITEM MODAL (центр экрана) -->
+<div id="itemModal" class="item-modal hidden">
+  <div id="itemModalBackdrop" class="item-modal__backdrop"></div>
+
+<div id="itemModalCard" class="item-modal__card rarity-common">
+  <button id="itemModalClose" class="item-modal__close">✕</button>
+
+  <!-- LVL слева сверху -->
+  <div id="itemModalLvl" class="item-modal__pill item-modal__lvl">LVL 1</div>
+
+  <!-- RARITY справа сверху -->
+  <div id="itemModalRarity" class="item-modal__pill item-modal__rarity">EPIC</div>
+
+  <!-- Картинка по центру -->
+  <img id="itemModalImg" class="item-modal__img" alt="weapon">
+
+  <!-- НИЗ: атака + roll + кнопка -->
+ <div class="item-modal__bottom">
+  <div class="item-modal__stats">
+    <div class="item-modal__stats-title">Характеристики</div>
+
+    <div class="item-modal__stats-lines">
+      <div id="itemModalAtk" class="item-modal__atk"></div>
+    </div>
+  </div>
+
+  <div class="item-modal__actions">
+  <button id="itemModalEquipBtn" class="item-modal__btn">Надеть</button>
+  <button id="itemModalBreakBtn" class="item-modal__btn item-modalbtn--danger">Сломать</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script src="/static/js/state.js?v=1"></script>
+<script src="/static/js/ui.js?v=3"></script>
+<script src="/static/js/fx.js?v=1"></script>
+<script src="/static/js/battle.js?v=2"></script>
+
+
+<script>
+  window.addEventListener("load", () => {
+    if (window.__initDone) return;
+    window.__initDone = true;
+    if (typeof initGame === "function") initGame();
+  });
+</script>
+
+</div>
+</body>
+</html>

@@ -253,7 +253,7 @@
 /* Крестик всегда поверх всего */
 #forgeModal #closeForge{
   position: absolute;
-  top: 8px;
+  top: 22px;
   right: 8px;
   z-index: 60;
 }

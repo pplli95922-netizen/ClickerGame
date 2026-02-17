@@ -1235,7 +1235,6 @@ function formatWeaponModifierLine(it){
 
   if (!modId) return "";
 
-  // Пока у вас 1 мод: bleeding_edge (как в backend)
   if (modId === "bleeding_edge"){
     const CFG = {
       common:    { chance: 0.10, dps_pct: 0.03, duration: 4 },
@@ -1247,12 +1246,11 @@ function formatWeaponModifierLine(it){
 
     const c = CFG[rarity] || CFG.common;
     const chance = Math.round(c.chance * 100);
-    const dps = Math.round(c.dps_pct * 100);
+    const percent = Math.round(c.dps_pct * 100);
 
-    return `Модификатор: Bleeding Edge — ${chance}% шанс, bleed ${dps}%/сек, ${c.duration}с`;
+    return `С шансом ${chance}% накладывает на противника кровотечение: ${percent}% от базового урона оружия в секунду в течение ${c.duration} сек.`;
   }
 
-  // на будущее для других модов
   return `Модификатор: ${modId}`;
 }
 
@@ -1272,8 +1270,17 @@ if (itemModalBreakBtn) itemModalBreakBtn.textContent = "Сломать";
   // подсветка окна под редкость
   if (itemModalCard) itemModalCard.className = `item-modal__card rarity-${rarity}`;
 
- if (itemModalLvl) itemModalLvl.textContent = `LVL ${lvl}`;
-if (itemModalRarity) itemModalRarity.textContent = String(rarity).toUpperCase();
+ const RARITY_RU = {
+  common: "Обычный",
+  uncommon: "Необычный",
+  rare: "Редкий",
+  epic: "Эпический",
+  legendary: "Легендарный",
+};
+
+if (itemModalLvl) itemModalLvl.textContent = `Ур. ${lvl}`;
+if (itemModalRarity) itemModalRarity.textContent = RARITY_RU[rarity] || "Обычный";
+
 
   // контент
   if (itemModalAtk) itemModalAtk.textContent = `${atk} Атаки`;

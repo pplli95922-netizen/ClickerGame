@@ -156,12 +156,14 @@
 }
 
 .item-modal__mod{
-  margin-top: 6px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
+  color: rgba(255,255,255,0.9);
   text-align: center;
-  color: rgba(255,255,255,0.85);
+  line-height: 1.35;
+  padding: 0 20px;
 }
+
 
 .item-modal__meta{
   margin-top: 0;
@@ -357,4 +359,9 @@
 .item-modal__btn--danger:disabled{
   opacity: 0.6;
   filter: grayscale(0.2);
+}
+
+#itemModalRarity, #itemModalLvl{
+  text-transform: none !important;
+  letter-spacing: 0.2px;
 }

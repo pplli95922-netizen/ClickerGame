@@ -12,7 +12,7 @@ RARITY_MULTIPLIER = {
     "uncommon": 1.2,
     "rare": 1.4,
     "epic": 1.6,
-    "legendary": 2,
+    "legendary": 2.0,
 }
 
 RARITY_CHANCE = {

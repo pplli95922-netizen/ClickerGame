@@ -636,9 +636,8 @@ def apply_boss_regen(state: PlayerState, now: float) -> int:
 def use_core_strike(state: PlayerState) -> dict:
     now = time.time()
 
-    regen_heal = apply_boss_regen(state, now)
-
-    bleed_damage = apply_bleed_ticks(state, now)
+    regen_heal = 0
+    bleed_damage = 0
 
     skills = state.setdefault("skills", {})
     cds = state.setdefault("skill_cd_until", {})
@@ -745,6 +744,87 @@ def use_core_strike(state: PlayerState) -> dict:
     "boss_regen": int(regen_heal),
 }
 
+def _handle_boss_death_autoloot(state: PlayerState, boss_lvl: int, cfg: dict) -> dict:
+    # 1) coins
+    reward_coins = int(cfg.get("reward_coins", 0) or 0)
+    state["coins"] = int(state.get("coins", 0)) + reward_coins
+
+    # 2) resources (с шансами)
+    reward_res = roll_reward_resources(cfg.get("reward_resources", {}) or {})
+    if "resources" not in state or state["resources"] is None:
+        state["resources"] = {}
+    for res_name, qty in reward_res.items():
+        qty = int(qty or 0)
+        if qty > 0:
+            state["resources"][res_name] = int(state["resources"].get(res_name, 0)) + qty
+
+    # 3) XP
+    xp_gain = calc_boss_xp_reward(boss_lvl)
+    xp_event = add_player_xp(state, xp_gain)
+
+    # 4) открыть следующего босса
+    max_unlocked = int(state.get("boss_unlocked_max", 1))
+    if boss_lvl == max_unlocked and has_boss(boss_lvl + 1):
+        state["boss_unlocked_max"] = boss_lvl + 1
+
+    # 5) сундук чистим (на случай, если фронт что-то ждёт)
+    state["pending_loot"] = {"coins": 0, "resources": {}}
+
+    # 6) респавн текущего босса
+    hp = int(cfg.get("hp", 0) or 0)
+    if hp > 0:
+        state["boss_max_hp"] = hp
+        state["boss_hp"] = hp
+        state["boss_last_regen_ts"] = 0.0
+
+    # сброс bleed
+    if "boss_bleed" in state and isinstance(state["boss_bleed"], dict):
+        state["boss_bleed"]["stacks"] = 0
+        state["boss_bleed"]["dps_per_stack"] = 0
+        state["boss_bleed"]["expires_at"] = 0.0
+        state["boss_bleed"]["last_tick_ts"] = 0.0
+
+    return {
+        "killed": True,
+        "reward": {"coins": reward_coins, "resources": reward_res},
+        "xp": xp_event,
+        "boss_unlocked_max": int(state.get("boss_unlocked_max", 1)),
+    }
+
+
+def server_tick(state: PlayerState) -> dict:
+    """
+    Серверный тик (фронт вызывает раз в ~1 сек).
+    Считает regen и bleed по времени.
+    Возвращает event с bleed_damage.
+    """
+    now = time.time()
+
+    # если вдруг включишь сундук — при boss_dead тут можно просто ничего не делать
+    if state.get("boss_dead", False):
+        return {"ok": True, "bleed_damage": 0, "boss_regen": 0}
+
+    boss_regen = apply_boss_regen(state, now)
+    bleed_damage = apply_bleed_ticks(state, now)
+
+    death_event = None
+    # если bleed добил босса — награду выдаём тут
+    if state.get("boss_hp", 0) <= 0 and not state.get("boss_dead", False):
+        state["boss_dead"] = True
+        boss_lvl = int(state.get("boss_lvl", 1))
+        cfg = get_boss_config(boss_lvl) or {}
+        death_event = _handle_boss_death_autoloot(state, boss_lvl, cfg)
+        state["boss_dead"] = False
+
+    return {
+        "ok": True,
+        "bleed_damage": int(bleed_damage),
+        "boss_regen": int(boss_regen),
+        "boss_hp": int(state.get("boss_hp", 0)),
+        "boss_max_hp": int(state.get("boss_max_hp", 0)),
+        "death": death_event,
+    }
+
 
 # Уровень босса
 def set_boss(state: PlayerState, boss_lvl: int) -> dict:
@@ -828,8 +908,8 @@ def add_player_xp(state: PlayerState, xp_gain: int) -> dict:
 
 def use_heavy_blow(state: PlayerState) -> dict:
     now = time.time()
-    regen_heal = apply_boss_regen(state, now)
-    bleed_damage = apply_bleed_ticks(state, now)
+    regen_heal = 0
+    bleed_damage = 0
 
     # --- CD ---
     cd_until = float(state.get("skill_cd_until", {}).get("heavy_blow", 0))

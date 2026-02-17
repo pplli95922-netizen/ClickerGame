@@ -14,6 +14,7 @@ from game.logic import (
     use_core_strike,
     set_boss,
     use_heavy_blow,
+    server_tick,
 )
 from game.storage import load_state, save_state
 
@@ -42,6 +43,17 @@ def api_init(payload: Dict[str, Any]):
 
     state = load_state(user_id, name=name)
     return {"state": state}
+
+
+@app.post("/tick")
+def api_tick(payload: Dict[str, Any]):
+    user_id = int(payload["user_id"])
+
+    state = load_state(user_id)
+    event = server_tick(state)
+    save_state(user_id, state)
+
+    return {"state": state, "event": event}
 
 
 @app.post("/collect_loot")

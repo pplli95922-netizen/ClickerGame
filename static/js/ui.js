@@ -137,6 +137,67 @@ const dselPreviewImg = document.getElementById("dselPreviewImg");
 const dselList = document.getElementById("dselList");
 const dselEnterBtn = document.getElementById("dselEnterBtn");
 
+function enableDragScroll(el){
+  if (!el || el.__dragScrollEnabled) return;
+  el.__dragScrollEnabled = true;
+
+  let isDown = false;
+  let startY = 0;
+  let startScrollTop = 0;
+  let dragging = false;
+  const THRESHOLD = 12; // если клики всё ещё режутся — поставь 16
+
+  el.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+
+    isDown = true;
+    dragging = false;
+    startY = e.clientY;
+    startScrollTop = el.scrollTop;
+  });
+
+  el.addEventListener("pointermove", (e) => {
+    if (!isDown) return;
+
+    const dy = e.clientY - startY;
+
+    // пока не прошли порог — это ТАП, ничего не делаем (клик должен работать)
+    if (!dragging) {
+      if (Math.abs(dy) < THRESHOLD) return;
+
+      // только теперь считаем это "перетаскивание" и начинаем перехват
+      dragging = true;
+      el.setPointerCapture?.(e.pointerId);
+    }
+
+    // реальная прокрутка при drag
+    el.scrollTop = startScrollTop - dy;
+    e.preventDefault();
+  }, { passive: false });
+
+  el.addEventListener("pointerup", (e) => {
+    isDown = false;
+
+    // если был drag — глушим "случайный" клик после отпускания
+    if (dragging) {
+      // самое надёжное: гасим следующий клик только ОДИН раз
+      const stopClickOnce = (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        el.removeEventListener("click", stopClickOnce, true);
+      };
+      el.addEventListener("click", stopClickOnce, true);
+    }
+
+    dragging = false;
+  });
+
+  el.addEventListener("pointercancel", () => {
+    isDown = false;
+    dragging = false;
+  });
+}
+
 let __selectedBossLvl = 1;
 
 // Сколько уровней рисовать в списке (пока фикс 100)
@@ -200,6 +261,7 @@ function renderBossLevelList(){
   }
 
   dselList.appendChild(frag);
+  enableDragScroll(dselList);
 
   // event delegation
   dselList.onclick = (e) => {

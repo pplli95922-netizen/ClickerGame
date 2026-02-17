@@ -6,6 +6,32 @@ if (typeof window.__battleCleanup === "function") window.__battleCleanup();
 
 // ===== DOM refs (battle.js must be independent) =====
 const wrapper = document.querySelector(".game-wrapper");
+
+function getWrapperScale(){
+  if (!wrapper) return 1;
+
+  const cs = getComputedStyle(wrapper);
+
+  // 1) CSS-переменная
+  const v = parseFloat(cs.getPropertyValue("--ui-scale"));
+  if (Number.isFinite(v) && v > 0) return v;
+
+  // 2) fallback: matrix(...) / matrix3d(...)
+  const tr = cs.transform;
+  if (tr && tr !== "none") {
+    const m3 = tr.match(/matrix3d\(([^)]+)\)/);
+    if (m3) {
+      const a = parseFloat(m3[1].split(",")[0]);
+      if (Number.isFinite(a) && a > 0) return a;
+    }
+    const m2 = tr.match(/matrix\(([^)]+)\)/);
+    if (m2) {
+      const a = parseFloat(m2[1].split(",")[0]);
+      if (Number.isFinite(a) && a > 0) return a;
+    }
+  }
+  return 1;
+}
 // === DISABLE NORMAL TAPS (урон только от скилла) ===
 if (wrapper) {
   const allowSel = [
@@ -1438,9 +1464,11 @@ function showDamageOverMob(m, text, isCrit){
 
   const mobRect = m.el.getBoundingClientRect();
   const wrapRect = wrapper.getBoundingClientRect();
+  const scale = getWrapperScale();
 
-  const x = (mobRect.left - wrapRect.left) + (mobRect.width / 2);
-  const y = (mobRect.top  - wrapRect.top)  + (mobRect.height * 0.2);
+  const x = ((mobRect.left - wrapRect.left) + (mobRect.width / 2)) / scale;
+  const y = ((mobRect.top  - wrapRect.top)  + (mobRect.height * 0.2)) / scale;
+
 
   el.style.left = Math.round(x) + "px";
   el.style.top  = Math.round(y) + "px";
@@ -1479,8 +1507,10 @@ else el.textContent = s;
     const mobRect  = m.el.getBoundingClientRect();
     const wrapRect = wrapper.getBoundingClientRect();
 
-    x = (mobRect.left - wrapRect.left) + (mobRect.width / 2);
-    y = (mobRect.top  - wrapRect.top)  + (mobRect.height * 0.2);
+    const scale = getWrapperScale();
+  x = ((mobRect.left - wrapRect.left) + (mobRect.width / 2)) / scale;
+  y = ((mobRect.top  - wrapRect.top)  + (mobRect.height * 0.2)) / scale;
+
 
     y -= 34;
     y -= stackIndex * 18;

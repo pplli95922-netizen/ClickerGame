@@ -847,7 +847,7 @@ const evDmgRaw =
   ev?.amount ?? ev?.value ?? ev?.deal;
 
 const evDmg = (evDmgRaw != null) ? Number(evDmgRaw) : NaN;
-const killedByBigDmg = (Number.isFinite(evDmg) && evDmg > 0 && prevHp > 0 && evDmg >= prevHp);
+const killedByBigDmg = (Number.isFinite(evDmg) && evDmg > 0 && prevHp > 0 && evDmg >= prevHp && curHp <= 0);
 
 const looksLikeRespawn = (curMax > 0) && (curHp >= curMax) && (prevHp > 0) && (curHp > prevHp);
 

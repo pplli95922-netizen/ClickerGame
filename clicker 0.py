@@ -39,7 +39,7 @@ def read_index():
 def api_init(payload: Dict[str, Any]):
     user_id = int(payload["user_id"])
     name = str(payload.get("name") or "Игрок")
-    
+
     state = load_state(user_id, name=name)
     return {"state": state}
 

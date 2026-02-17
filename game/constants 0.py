@@ -50,9 +50,6 @@ RESOURCE_DROP_CHANCE = 0.99
 # ---------- Core skill ----------
 CORE_STRIKE_ID = "core_strike"
 CORE_STRIKE_CD = 1.2
-CORE_STRIKE_STACK_TIMEOUT = 2.5
-CORE_STRIKE_STACK_BONUS = 0.02
-CORE_STRIKE_MAX_STACKS = 10
 
 # ---------- Heavy Blow ----------
 HEAVY_BLOW_CD = 20.0        # Секунды
@@ -89,4 +86,20 @@ CRIT_BY_RARITY = {
         "chance": 0.10,   # 25%
         "mult": 3.0,
     },
+}
+
+
+# ---------- Weapon modifiers (1 of 10): Bleeding Edge ----------
+WEAPON_MODIFIER_IDS = [
+    "bleeding_edge",
+    # дальше добавим остальные 9
+]
+
+# параметры bleed зависят от rarity оружия
+BLEEDING_EDGE_BY_RARITY = {
+    "common":    {"chance": 0.10, "dps_pct": 0.03, "duration": 4.0, "max_stacks": 1},
+    "uncommon":  {"chance": 0.12, "dps_pct": 0.04, "duration": 4.0, "max_stacks": 1},
+    "rare":      {"chance": 0.15, "dps_pct": 0.06, "duration": 5.0, "max_stacks": 2},
+    "epic":      {"chance": 0.18, "dps_pct": 0.08, "duration": 5.0, "max_stacks": 3},
+    "legendary": {"chance": 0.22, "dps_pct": 0.10, "duration": 6.0, "max_stacks": 4},
 }

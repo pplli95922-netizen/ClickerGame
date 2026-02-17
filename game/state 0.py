@@ -60,6 +60,14 @@ def create_state(name: str) -> PlayerState:
         "boss_hp": first_boss["hp"],       # ТЕКУЩЕЕ HP
         "boss_max_hp": first_boss["hp"],   # МАКС HP
         "boss_last_regen_ts": 0.0,         # Таймер регенерации
+
+        # МОДИФИКАТОРЫ
+        "boss_bleed": {
+            "stacks": 0,
+            "dps_per_stack": 0,
+            "expires_at": 0.0,
+            "last_tick_ts": 0.0,
+        },
     
 
         # ресурсы
@@ -73,20 +81,8 @@ def create_state(name: str) -> PlayerState:
         "pending_loot": {"coins": 0, "resources": {}},
         "inventory": [],
         "equipped_weapon": None,
-        
-        "craft_cost_preview": {"coins": 0, "resources": {}},
 
-        # скилы
-        "skills": {
-            "core_strike": {
-                "lvl": 1,
-                "stacks": 0,
-                "last_use_ts": 0.0,
-            }
-        },
-        "skill_cd_until": {
-            "core_strike": 0.0
-        },
+        "craft_cost_preview": {"coins": 0, "resources": {}},
         
     }
 

@@ -129,6 +129,142 @@ const bgB = document.getElementById("bgB");
 const golem = document.getElementById("golem");
 const bossLvlValue = document.getElementById("bossLvlValue");
 const mapToast = document.getElementById("mapToast");
+// ===== NEW MAP UI (scroll levels + preview) =====
+const dselTitle = document.getElementById("dselTitle");
+const dselSub = document.getElementById("dselSub");
+const dselDesc = document.getElementById("dselDesc");
+const dselPreviewImg = document.getElementById("dselPreviewImg");
+const dselList = document.getElementById("dselList");
+const dselEnterBtn = document.getElementById("dselEnterBtn");
+
+let __selectedBossLvl = 1;
+
+// Сколько уровней рисовать в списке (пока фикс 100)
+const BOSS_LEVEL_CAP = 100;
+
+function getMaxReachedBossLvl(){
+  const mxRaw =
+    (window.boss_lvl_max_reached !== undefined)
+      ? window.boss_lvl_max_reached
+      : (typeof boss_lvl_max_reached !== "undefined" ? boss_lvl_max_reached : 1);
+
+  return Math.max(1, Number(mxRaw) || 1);
+}
+
+// пока каркас: одна картинка, позже сделаем разные
+function previewImageForLevel(lvl){
+  // потом сделаем массив картинок по диапазонам/биомам
+  return "/static/images/dungeon-bg1.jpg";
+}
+
+function setSelectedBossLvl(lvl){
+  __selectedBossLvl = Math.max(1, Number(lvl) || 1);
+
+  if (dselSub) dselSub.textContent = `LVL ${__selectedBossLvl}`;
+  if (dselPreviewImg) dselPreviewImg.src = previewImageForLevel(__selectedBossLvl);
+
+  // подсветка в списке
+  if (dselList){
+    const items = dselList.querySelectorAll(".dsel-item");
+    items.forEach(el => {
+      const v = Number(el.dataset.lvl) || 0;
+      el.classList.toggle("dsel-item--selected", v === __selectedBossLvl);
+    });
+  }
+}
+
+function renderBossLevelList(){
+  if (!dselList) return;
+
+  const maxReached = getMaxReachedBossLvl();
+
+  dselList.innerHTML = "";
+  const frag = document.createDocumentFragment();
+
+  for (let lvl = 1; lvl <= BOSS_LEVEL_CAP; lvl++){
+    const locked = lvl > maxReached;
+
+    const el = document.createElement("div");
+    el.className = "dsel-item" + (locked ? " dsel-item--locked" : "");
+    el.dataset.lvl = String(lvl);
+
+    el.innerHTML = `
+      <div class="dsel-item__left">
+        <div class="dsel-item__lvl">BOSS LVL ${lvl}</div>
+        <div class="dsel-item__tag">${locked ? "Закрыто" : "Доступно"}</div>
+      </div>
+      <div class="dsel-item__lock">${locked ? "🔒" : ""}</div>
+    `;
+
+    frag.appendChild(el);
+  }
+
+  dselList.appendChild(frag);
+
+  // event delegation
+  dselList.onclick = (e) => {
+    const item = e.target.closest(".dsel-item");
+    if (!item) return;
+
+    const lvl = Number(item.dataset.lvl) || 1;
+    setSelectedBossLvl(lvl);
+
+    // автоскролл чтобы выбранный был виден
+    item.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  };
+
+  // подсветить текущий
+  setSelectedBossLvl(__selectedBossLvl);
+
+  // прокрутить к выбранному
+  const curEl = dselList.querySelector(`.dsel-item[data-lvl="${__selectedBossLvl}"]`);
+  if (curEl) curEl.scrollIntoView({ block: "center", behavior: "instant" });
+}
+
+async function enterSelectedBossLevel(){
+  const lvl = Math.max(1, Number(__selectedBossLvl) || 1);
+  const maxReached = getMaxReachedBossLvl();
+
+  if (lvl > maxReached){
+    showMapToast(`Нельзя выбрать LVL ${lvl}.\nТвой максимум: LVL ${maxReached}`, 2000);
+    return;
+  }
+
+  if (!dselEnterBtn) return;
+
+  const old = dselEnterBtn.textContent;
+  dselEnterBtn.disabled = true;
+  dselEnterBtn.textContent = "⏳";
+
+  try{
+    if (typeof window.setBossLevel === "function"){
+      await window.setBossLevel(lvl);
+    }
+
+    if (typeof window.resetEncounter === "function") {
+      window.resetEncounter({ startMode: "approach", keepBackground: true });
+    }
+
+    // закрыть карту
+    if (mapScreen) mapScreen.style.display = "none";
+    if (typeof syncOverlayFlag === "function") syncOverlayFlag();
+  }catch(err){
+    console.log("enterSelectedBossLevel error:", err);
+    if (typeof showErrorToast === "function") showErrorToast("Не удалось войти");
+  }finally{
+    dselEnterBtn.disabled = false;
+    dselEnterBtn.textContent = old;
+  }
+}
+
+if (dselEnterBtn){
+  dselEnterBtn.onclick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    enterSelectedBossLevel();
+  };
+}
+
 const craftCostTxt = document.getElementById("craftCostTxt");
 const oreTxt = document.getElementById("oreTxt");
 const forgeOreTxt = document.getElementById("forgeOreTxt");
@@ -196,17 +332,14 @@ inventoryCloseBtn.onclick = () => {
 mapBtn.onclick = () => {
   mapScreen.style.display = "flex";
   syncOverlayFlag();
+
   const cur = Math.max(1, Number(boss_lvl) || 1);
+  __selectedBossLvl = cur;
 
-  const mxRaw =
-    (window.boss_lvl_max_reached !== undefined)
-      ? window.boss_lvl_max_reached
-      : (typeof boss_lvl_max_reached !== "undefined" ? boss_lvl_max_reached : 1);
+  if (dselTitle) dselTitle.textContent = "Forsaken Cathedral"; // потом поменяешь на свои локации
+  if (dselDesc) dselDesc.textContent = "Выберите уровень справа";
 
-  const mx = Math.max(1, Number(mxRaw) || 1);
-
-  if (bossLvlInput) bossLvlInput.value = cur;
-  if (bossLvlHint) bossLvlHint.textContent = `Текущий: LVL ${cur} • Максимум: LVL ${mx}`;
+  renderBossLevelList();
 };
 
 

@@ -171,27 +171,31 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
   <button class="screen-close" id="mapCloseBtn">✕</button>
   <img src="/static/images/map-bg.jpg" class="screen-img">
 
-    <div id="mapToast" class="map-toast"></div>
+  <div id="mapToast" class="map-toast"></div>
 
-    <div class="map-panel" id="mapPanel">
-    <div class="map-panel__title">Босс</div>
+  <!-- NEW: dungeon / boss level select -->
+  <div class="dsel">
+    <!-- LEFT: preview -->
+    <div class="dsel-left">
+      <div id="dselTitle" class="dsel-title">Dungeon</div>
+      <div id="dselSub" class="dsel-sub">LVL 1</div>
 
-    <div class="map-panel__row">
-      <button id="bossLvlDown" class="map-square-btn" type="button">−</button>
-
-      <div class="map-lvl">
-        <div class="map-lvl__label">LVL</div>
-        <input id="bossLvlInput" class="map-lvl__input" type="number" min="1" step="1" value="1">
+      <div class="dsel-preview">
+        <img id="dselPreviewImg" class="dsel-preview-img" src="/static/images/dungeon-bg1.jpg" alt="">
       </div>
 
-      <button id="bossLvlUp" class="map-square-btn" type="button">+</button>
-
-      <button id="bossLvlApply" class="map-apply-btn" type="button">Применить</button>
+      <div id="dselDesc" class="dsel-desc">Выберите уровень справа</div>
     </div>
 
-    <div id="bossLvlHint" class="map-panel__hint"></div>
-  </div>
+    <!-- RIGHT: scrollable levels -->
+    <div class="dsel-right">
+      <div class="dsel-right-title">Уровни</div>
+      <div id="dselList" class="dsel-list"></div>
+    </div>
 
+    <!-- ONE BUTTON -->
+    <button id="dselEnterBtn" class="dsel-enter" type="button">Войти</button>
+  </div>
 </div>
 
 <div id="heroAnchor" class="hero-anchor">

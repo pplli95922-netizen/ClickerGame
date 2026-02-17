@@ -51,24 +51,24 @@
   transform: translate(-50%, -50%) scale(1);
 }
 
-/* ===== NEW: Dungeon Select Layout ===== */
 .dsel{
   position: absolute;
-  inset: 14px;
+  inset: 0;          /* было 14px — это и давало отступы от краёв */
   z-index: 70;
 
   display: grid;
   grid-template-columns: 1.35fr 1fr;
   grid-template-rows: 1fr auto;
-  gap: 12px;
+  gap: 0;            /* чтобы правая/левая часть были без зазора от краёв */
 
-  border-radius: 18px;
-  padding: 12px;
+  padding: 0;        /* убираем внутренний отступ контейнера */
 
-  background: rgba(0,0,0,.55);
-  border: 1px solid rgba(255,255,255,.14);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.75);   /* почти непрозрачный */
+border: 1px solid rgba(255,255,255,0.08);
+backdrop-filter: blur(4px);
+
 }
+
 
 .dsel-left{
   position: relative;

@@ -6,7 +6,11 @@ from .state import PlayerState, create_state
 from .logic import forge_xp_needed, get_craft_cost_preview
 from .upgrades import BOSSES
 
-SAVE_FILE = "players.json"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SAVE_DIR = os.path.join(BASE_DIR, "..", "json")
+os.makedirs(SAVE_DIR, exist_ok=True)
+
+SAVE_FILE = os.path.join(SAVE_DIR, "players.json")
 
 
 def _load_all() -> Dict[str, PlayerState]:

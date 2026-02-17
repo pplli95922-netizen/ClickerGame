@@ -88,6 +88,7 @@ const itemModalLvl = document.getElementById("itemModalLvl");
 const itemModalRarity = document.getElementById("itemModalRarity");
 const itemModalImg = document.getElementById("itemModalImg");
 const itemModalAtk = document.getElementById("itemModalAtk");
+const itemModalMod = document.getElementById("itemModalMod");
 const itemModalMeta = document.getElementById("itemModalMeta");
 const itemModalEquipBtn = document.getElementById("itemModalEquipBtn");
 const craftResult = document.getElementById("craftResult");
@@ -1225,6 +1226,37 @@ pendingBreakArmed = false;
 if (itemModalBreakBtn) itemModalBreakBtn.textContent = "Сломать";
 }
 
+function formatWeaponModifierLine(it){
+  if (!it) return "";
+
+  const rarity = String(it.rarity || "common");
+  const mod = it.modifier || {};
+  const modId = (typeof mod === "string") ? mod : mod.id;
+
+  if (!modId) return "";
+
+  // Пока у вас 1 мод: bleeding_edge (как в backend)
+  if (modId === "bleeding_edge"){
+    const CFG = {
+      common:    { chance: 0.10, dps_pct: 0.03, duration: 4 },
+      uncommon:  { chance: 0.12, dps_pct: 0.035, duration: 4 },
+      rare:      { chance: 0.14, dps_pct: 0.04, duration: 5 },
+      epic:      { chance: 0.16, dps_pct: 0.05, duration: 5 },
+      legendary: { chance: 0.20, dps_pct: 0.06, duration: 6 },
+    };
+
+    const c = CFG[rarity] || CFG.common;
+    const chance = Math.round(c.chance * 100);
+    const dps = Math.round(c.dps_pct * 100);
+
+    return `Модификатор: Bleeding Edge — ${chance}% шанс, bleed ${dps}%/сек, ${c.duration}с`;
+  }
+
+  // на будущее для других модов
+  return `Модификатор: ${modId}`;
+}
+
+
 function openItemModal(it){
   if (!itemModal) return;
   window.__openedItem = it;
@@ -1245,6 +1277,12 @@ if (itemModalRarity) itemModalRarity.textContent = String(rarity).toUpperCase();
 
   // контент
   if (itemModalAtk) itemModalAtk.textContent = `${atk} Атаки`;
+  if (itemModalMod){
+  const line = formatWeaponModifierLine(it);
+  itemModalMod.textContent = line;
+  itemModalMod.style.display = line ? "" : "none";
+}
+
   if (itemModalMeta) itemModalMeta.textContent = "";
 
   if (itemModalImg) {

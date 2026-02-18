@@ -1,6 +1,6 @@
 .stats-top-right{
   position: absolute;
-  top: 10px;
+  top: 70px;
   right: 10px;
 
   display: flex;
@@ -159,7 +159,7 @@
 
 .player-name {
   position: absolute;
-  top: 8px;
+  top: 70px;
   left: 10px;
   color: #fff;
   font-size: 16px;
@@ -233,7 +233,7 @@
 /* ===== Boss LVL badge (main screen) ===== */
 .boss-lvl-badge{
   position: absolute;
-  top: 34px;
+  top: 90px;
   left: 10px;
   z-index: 6;
 

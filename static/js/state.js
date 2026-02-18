@@ -396,7 +396,46 @@ function pickStateFromResponse(data){
 }
 
 // ======================
-// HP regen sync (5s poll)
+// ======================
+// Server tick (1s poll)
+// ======================
+let __serverTickTimer = null;
+let __serverTickInFlight = false;
+
+function startServerTick(){
+  if (__serverTickTimer) return;
+  __serverTickTimer = setInterval(serverTickOnce, 1000);
+}
+
+async function serverTickOnce(){
+  if (__serverTickInFlight) return;
+  if (document.hidden) return;
+  if (window.__mobDeathAnimating) return;
+
+  __serverTickInFlight = true;
+  try {
+    const res = await fetch("https://clickergame-0wae.onrender.com/tick", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: String(USER_ID) })
+    });
+    if (!res.ok) return;
+
+    const data = await res.json();
+
+    // tick возвращает { state, event }
+    const st = pickStateFromResponse(data) || (data.state || data);
+    if (st) applyState(st);
+
+    // на всякий случай обновим HP бар сразу
+    if (typeof updateBossHpBar === "function") updateBossHpBar();
+  } catch (e) {
+    // молча
+  } finally {
+    __serverTickInFlight = false;
+  }
+}
+
 // ======================
 let __hpSyncTimer = null;
 let __hpSyncInFlight = false;
@@ -570,6 +609,9 @@ if (typeof window.setBossHpVisible === "function") window.setBossHpVisible(true)
     if (playerNameTxt) playerNameTxt.textContent = playerName;
     if (typeof updateBossHpBar === "function") updateBossHpBar();
     if (typeof renderStats === "function") renderStats();
+
+    startServerTick();     // ✅ тик каждую секунду
+startHpRegenSync();    // ✅ (опционально) синк раз в 5 сек, у тебя он тоже не запускался
     
   } catch (err) {
     console.log("INIT ERROR", err);

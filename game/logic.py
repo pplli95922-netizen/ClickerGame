@@ -37,10 +37,6 @@ from .constants import (
 from .upgrades import BOSSES, has_boss, get_boss_config
 
 
-def roll_weapon_attack() -> float:
-    return random.uniform(1, 1.25)
-
-
 def craft_coins_cost(forge_lvl: int) -> int:
     lvl = max(1, int(forge_lvl))
     return int(CRAFT_COINS_BASE * (CRAFT_COINS_GROWTH ** (lvl - 1)))
@@ -443,7 +439,7 @@ def craft_success_add_weapon(
         state["inventory"] = []
 
     # 2) генерируем roll атаки (разброс)
-    roll = random.uniform(0.75, 1.25)
+    roll = random.uniform(0.9, 1.1)
 
     # 3) делаем простой уникальный id (хватит для тестов)
     weapon_id = f"w{random.randint(100000, 999999)}"

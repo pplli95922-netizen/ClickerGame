@@ -46,13 +46,12 @@ def craft_coins_cost(forge_lvl: int) -> int:
 def get_craft_cost_preview(state: PlayerState) -> dict:
     forge_lvl = int(state.get("forge_lvl", 1))
 
-    # монеты
-    coins_base = 10
-    coins_cost = scale_cost(coins_base, forge_lvl)
+    # монеты — ровно как в handle_craft
+    coins_cost = craft_coins_cost(forge_lvl)
 
-    # ресурсы (твоя текущая логика)
+    # ресурсы — ровно как в handle_craft
     if forge_lvl >= 4:
-        resources_cost = {"wood": 2, "ore": 2}
+        resources_cost = {"wood": 3, "ore": 2}
     else:
         resources_cost = {"wood": 1}
 

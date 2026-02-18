@@ -1,95 +1,112 @@
-# storage.py
+# storage.py (SQLite, без миграции)
 import json
 import os
-from typing import Dict
+import sqlite3
+from typing import Optional
+
 from .state import PlayerState, create_state
 from .logic import forge_xp_needed, get_craft_cost_preview
 from .upgrades import BOSSES
 
-SAVE_FILE = "players.json"
+
+# Render Disk: монтируется в /data
+# Локально тоже ок — файл создастся рядом, если /data недоступен
+DB_PATH = os.environ.get("DB_PATH", "/data/players.db")
 
 
-def _load_all() -> Dict[str, PlayerState]:
-    """
-    Внутренняя функция: грузим весь словарь игрок -> state из JSON.
-    Ключи храним как строки (для JSON).
-    """
-    if not os.path.exists(SAVE_FILE):
-        return {}
-
-    with open(SAVE_FILE, "r", encoding="utf-8") as f:
-        data = json.load(f)
-        # json.load вернёт dict[str, dict]
-        return data
+def _conn() -> sqlite3.Connection:
+    # отдельное соединение на вызов — нормально для FastAPI
+    conn = sqlite3.connect(DB_PATH, timeout=10, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
-def _save_all(data: Dict[str, PlayerState]) -> None:
-    """
-    Внутренняя функция: сохраняем весь словарь обратно в JSON.
-    """
-    with open(SAVE_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+def _init_db() -> None:
+    # если директории нет — создаём (на Render /data будет уже)
+    db_dir = os.path.dirname(DB_PATH)
+    if db_dir and not os.path.exists(db_dir):
+        os.makedirs(db_dir, exist_ok=True)
+
+    with _conn() as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS players (
+                user_id TEXT PRIMARY KEY,
+                state_json TEXT NOT NULL
+            )
+            """
+        )
+        conn.commit()
 
 
-def load_state(user_id: int, name: str | None = None) -> PlayerState:
-    """
-    Загружает состояние по user_id.
-    Если нет сохранения — создаёт новое состояние через create_state.
-    """
-    all_data = _load_all()
-    key = str(user_id)
-
-    if key in all_data:
-        state = all_data[key]
-
-        # --- backfill для старых сейвов ---
-        if "boss_unlocked_max" not in state:
-            state["boss_unlocked_max"] = int(state.get("boss_lvl", 1))
-
-        state["boss_unlocked_max"] = max(1, min(int(state["boss_unlocked_max"]), len(BOSSES)))
-
-        # --- backfill trophies ---
-        if "trophies" not in state:
-            state["trophies"] = []
-        if "trophy_attack_bonus" not in state:
-            state["trophy_attack_bonus"] = 0
-
-        state["forge_xp_need"] = int(forge_xp_needed(state.get("forge_lvl", 1)))
-        state["craft_cost_preview"] = get_craft_cost_preview(state)
-
-        return state
-
-    # если игрок новый — создаём
-    if name is None:
-        name = "Игрок"
-
-    state = create_state(name)
-    state["boss_unlocked_max"] = max(1, min(int(state.get("boss_unlocked_max", 1)), len(BOSSES)))
-    # derived поле: сколько XP нужно для апа кузницы
-    state["forge_xp_need"] = int(forge_xp_needed(state.get("forge_lvl", 1)))
-    state["craft_cost_preview"] = get_craft_cost_preview(state)
-    all_data[key] = state
-    _save_all(all_data)
-
-    return state
+_init_db()
 
 
-def save_state(user_id: int, state: PlayerState) -> None:
-    all_data = _load_all()
-    key = str(user_id)
-
+def _apply_backfill_and_derived(state: PlayerState) -> PlayerState:
     # boss unlocked max (backfill + clamp)
     if "boss_unlocked_max" not in state:
         state["boss_unlocked_max"] = int(state.get("boss_lvl", 1))
     state["boss_unlocked_max"] = max(1, min(int(state["boss_unlocked_max"]), len(BOSSES)))
 
-    # derived forge xp need
-    state["forge_xp_need"] = int(forge_xp_needed(state.get("forge_lvl", 1)))
-    state["craft_cost_preview"] = get_craft_cost_preview(state)
+    # trophies backfill
     if "trophies" not in state:
         state["trophies"] = []
     if "trophy_attack_bonus" not in state:
         state["trophy_attack_bonus"] = 0
 
-    all_data[key] = state
-    _save_all(all_data)
+    # derived поля
+    state["forge_xp_need"] = int(forge_xp_needed(state.get("forge_lvl", 1)))
+    state["craft_cost_preview"] = get_craft_cost_preview(state)
+
+    return state
+
+
+def load_state(user_id: int, name: Optional[str] = None) -> PlayerState:
+    user_id = int(user_id)
+    key = str(user_id)
+
+    with _conn() as conn:
+        row = conn.execute(
+            "SELECT state_json FROM players WHERE user_id = ?",
+            (key,),
+        ).fetchone()
+
+        # есть сохранение
+        if row is not None:
+            state = json.loads(row["state_json"])
+            return _apply_backfill_and_derived(state)
+
+        # игрок новый — создаём
+        if name is None:
+            name = "Игрок"
+
+        state = create_state(name)
+        state = _apply_backfill_and_derived(state)
+
+        conn.execute(
+            "INSERT INTO players(user_id, state_json) VALUES(?, ?)",
+            (key, json.dumps(state, ensure_ascii=False)),
+        )
+        conn.commit()
+
+        return state
+
+
+def save_state(user_id: int, state: PlayerState) -> None:
+    user_id = int(user_id)
+    key = str(user_id)
+
+    state = _apply_backfill_and_derived(state)
+
+    with _conn() as conn:
+        # UPSERT (работает в SQLite >= 3.24, на Render обычно ок)
+        conn.execute(
+            """
+            INSERT INTO players(user_id, state_json)
+            VALUES(?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                state_json = excluded.state_json
+            """,
+            (key, json.dumps(state, ensure_ascii=False)),
+        )
+        conn.commit()

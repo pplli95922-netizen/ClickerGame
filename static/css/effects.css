@@ -123,7 +123,7 @@
 }
 
 .loot-drop.is-fly{
-  transition: transform 0.55s cubic-bezier(.2,.9,.2,1), opacity 0.55s ease;
+  transition: transform 1s cubic-bezier(.2,.9,.2,1), opacity 1s ease;
 }
 .loot-drop.is-fade{
   opacity: 0;

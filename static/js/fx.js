@@ -139,7 +139,7 @@ function stopForgeFx(){
 
     // 2) пауза -> полёт в цель
     const fallMs  = 450;
-    const pauseMs = 600;
+    const pauseMs = 1100;
 
     setTimeout(() => {
       if (!targetEl) {
@@ -160,7 +160,7 @@ function stopForgeFx(){
       el.style.transform = `translate(-50%, -50%) translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
       el.classList.add("is-fade");
 
-      setTimeout(() => el.remove(), 650);
+      setTimeout(() => el.remove(), 1100);
     }, fallMs + pauseMs);
   };
 

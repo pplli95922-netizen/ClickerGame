@@ -1610,7 +1610,7 @@ window.showLootFloat = function(parts){
 
 
   // 2) когда "долетели" — показать текст над инвентарём (один раз суммарно)
-  const arriveMs = 250 + 450 + 600 + 120; // delay + fall + pause + небольшой запас
+  const arriveMs = 250 + 450 + 600 + 1000; // delay + fall + pause + небольшой запас
   setTimeout(() => {
     const parts2 = [];
     if (gain.coins) parts2.push(`💰 +${gain.coins}`);
@@ -1666,20 +1666,17 @@ m.pendingHit = false;
 m.atkFrames = null;
 m.hitFrames = null;
 
-// ✅ ФИКС МИГАНИЯ: если смерть срабатывает во время атаки,
-// класс .mob--atk резко меняет size/transform -> видно "blink" на 1 кадр.
-// Замораживаем вычисленные стили и только потом снимаем mob--atk.
-try {
-  const cs = getComputedStyle(m.el);
-  m.el.style.width = cs.width;
-  m.el.style.height = cs.height;
-  m.el.style.marginLeft = cs.marginLeft;
-  m.el.style.transform = cs.transform;
-  m.el.style.backgroundSize = cs.backgroundSize;
-  m.el.style.backgroundPosition = cs.backgroundPosition;
-} catch (e) {}
-
+// ✅ ФИКС РАСТЯЖЕНИЯ: смерть не должна наследовать "atk"-раздув
 m.el.classList.remove("mob--atk");
+
+// сбрасываем всё, что могло зафиксироваться инлайном
+m.el.style.width = "";
+m.el.style.height = "";
+m.el.style.marginLeft = "";
+m.el.style.transform = "";
+m.el.style.backgroundSize = "";
+m.el.style.backgroundPosition = "";
+
 
 
   // сброс визуальных стилей перед смертью

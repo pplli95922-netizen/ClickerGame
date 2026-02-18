@@ -92,6 +92,7 @@ CRIT_BY_RARITY = {
 # ---------- Weapon modifiers (1 of 10): Bleeding Edge ----------
 WEAPON_MODIFIER_IDS = [
     "bleeding_edge",
+    "execution",
     # дальше добавим остальные 9
 ]
 
@@ -101,5 +102,14 @@ BLEEDING_EDGE_BY_RARITY = {
     "uncommon":  {"chance": 0.12, "dps_pct": 0.04, "duration": 4.0, "max_stacks": 1},
     "rare":      {"chance": 0.15, "dps_pct": 0.06, "duration": 5.0, "max_stacks": 2},
     "epic":      {"chance": 0.18, "dps_pct": 0.08, "duration": 5.0, "max_stacks": 3},
-    "legendary": {"chance": 0.22, "dps_pct": 0.10, "duration": 6.0, "max_stacks": 4},
+    "legendary": {"chance": 0.28, "dps_pct": 0.10, "duration": 6.0, "max_stacks": 4},
+}
+
+EXECUTION_BY_RARITY = {
+    # срабатывает только когда босс ниже порога по HP, даёт бонус к урону
+    "common":   {"hp_pct": 0.20, "bonus_mult": 1.25},  # +25%
+    "uncommon": {"hp_pct": 0.22, "bonus_mult": 1.30},  # +30%
+    "rare":     {"hp_pct": 0.25, "bonus_mult": 1.35},  # +35%
+    "epic":     {"hp_pct": 0.35, "bonus_mult": 1.45},  # +45%
+    "legendary":{"hp_pct": 0.50, "bonus_mult": 1.60},  # +60%
 }

@@ -31,6 +31,7 @@ from .constants import (
     CRAFT_COINS_GROWTH,
     WEAPON_MODIFIER_IDS,
     BLEEDING_EDGE_BY_RARITY,
+    EXECUTION_BY_RARITY,
 
 
 )
@@ -184,6 +185,42 @@ def try_apply_bleeding_edge(state: PlayerState, now: float, atk_for_scaling: int
     }
 
     return {"applied": True, "stacks": stacks, "dps_per_stack": dps_per_stack, "duration": float(cfg["duration"])}
+
+def try_apply_execution_bonus(state: PlayerState, damage: int) -> tuple[int, dict | None]:
+    """
+    Если мод execution — увеличиваем урон, когда босс ниже порога HP.
+    Возвращает (новый_урон, event или None)
+    """
+    eq = state.get("equipped_weapon") or {}
+    mod = (eq.get("modifier") or {})
+    if mod.get("id") != "execution":
+        return damage, None
+
+    rarity = str(eq.get("rarity", "common"))
+    cfg = EXECUTION_BY_RARITY.get(rarity)
+    if not cfg:
+        return damage, None
+
+    boss_hp = int(state.get("boss_hp", 0) or 0)
+    boss_max = int(state.get("boss_max_hp", 0) or 0)
+    if boss_max <= 0 or boss_hp <= 0:
+        return damage, None
+
+    hp_pct = boss_hp / boss_max
+    if hp_pct > float(cfg["hp_pct"]):
+        return damage, None
+
+    new_damage = int(int(damage) * float(cfg["bonus_mult"]))
+    if new_damage < damage:
+        new_damage = damage
+
+    return new_damage, {
+        "triggered": True,
+        "hp_pct": round(hp_pct, 4),
+        "threshold": float(cfg["hp_pct"]),
+        "mult": float(cfg["bonus_mult"]),
+        "bonus": int(new_damage - damage),
+    }
 
 
 def scale_cost(base: int, forge_lvl: int) -> int:
@@ -658,7 +695,8 @@ def use_core_strike(state: PlayerState) -> dict:
     eq = state.get("equipped_weapon") or {}
     crit_chance = float(eq.get("crit_chance", 0.0))
     crit_mult = float(eq.get("crit_mult", 1.0))
-
+    exec_event = None
+    
     is_crit = False
     if crit_chance > 0 and random.random() < crit_chance:
         damage = int(damage * crit_mult)
@@ -677,6 +715,10 @@ def use_core_strike(state: PlayerState) -> dict:
             damage_done = 0
         else:
             damage_done = damage
+
+            # execution (если прокнул)
+            damage_done, exec_event = try_apply_execution_bonus(state, damage_done)
+
             state["boss_hp"] = max(0, int(state["boss_hp"]) - damage_done)
             bleed_apply = try_apply_bleeding_edge(state, now, int(state.get("attack", 1)))
     
@@ -734,6 +776,7 @@ def use_core_strike(state: PlayerState) -> dict:
     "dodged": dodged,
 
     "bleed_damage": int(bleed_damage),
+    "execution": exec_event,
 
     "boss_hp": int(state.get("boss_hp", 0)),
     "boss_max_hp": int(state.get("boss_max_hp", 0)),

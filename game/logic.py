@@ -1001,3 +1001,24 @@ def use_heavy_blow(state: PlayerState) -> dict:
         "boss_hp": int(state.get("boss_hp", 0)),
         "boss_max_hp": int(state.get("boss_max_hp", 0)),
     }
+
+
+def server_tick(state: PlayerState, now: float | None = None) -> dict:
+    """
+    Серверный тик: пересчитываем то, что зависит от времени.
+    Возвращаем только "дельту" (сколько нахилилось/натикало), чтобы фронт мог показать эффекты.
+    """
+    if now is None:
+        now = time.time()
+
+    boss_regen = apply_boss_regen(state, now)
+    bleed_damage = apply_bleed_ticks(state, now)
+
+    return {
+        "ok": True,
+        "boss_regen": int(boss_regen),
+        "bleed_damage": int(bleed_damage),
+        "boss_hp": int(state.get("boss_hp", 0)),
+        "boss_max_hp": int(state.get("boss_max_hp", 0)),
+        "boss_lvl": int(state.get("boss_lvl", 1)),
+    }

@@ -85,3 +85,60 @@
   color: #ff3b3b;
   text-shadow: 0 2px 0 #000, 0 0 10px rgba(255,0,0,.75);
 }
+
+/* ===== LOOT ICON DROP ===== */
+.loot-drop{
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  z-index: 2000;
+  pointer-events: none;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.6));
+}
+
+.loot-drop__icon{
+  width: 28px;
+  height: 28px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.22);
+  backdrop-filter: blur(4px);
+
+  font-size: 18px; /* для emoji */
+  font-weight: 900;
+
+  image-rendering: pixelated;
+}
+
+.loot-drop__icon .ore-ico{
+  width: 18px;
+  height: 18px;
+}
+
+.loot-drop.is-fly{
+  transition: transform 0.55s cubic-bezier(.2,.9,.2,1), opacity 0.55s ease;
+}
+.loot-drop.is-fade{
+  opacity: 0;
+}
+
+/* ===== INVENTORY GAIN FLOAT ===== */
+.inv-gain{
+  position: absolute;
+  z-index: 2100;
+  font-weight: 900;
+  font-size: 16px;
+  color: #fff;
+  text-shadow: 0 2px 0 #000, 0 0 6px rgba(0,0,0,.6);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  animation: dmgFloat 900ms ease-out forwards; /* keyframes уже есть в файле */
+}

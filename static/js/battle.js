@@ -1531,16 +1531,99 @@ else el.textContent = s;
 window.showLootFloat = function(parts){
   const m = getNearestMobInRange(220) || mobs[0] || null;
 
-  const text = Array.isArray(parts)
-    ? parts.filter(Boolean).join("\n")  // столбик
-    : String(parts ?? "");
+  const arr = Array.isArray(parts) ? parts.filter(Boolean) : [String(parts ?? "")].filter(Boolean);
+  if (!arr.length) return;
 
-  if (!text) return;
+  const invBtn = document.getElementById("inventoryBtn");
+  const canDrop = (typeof window.spawnLootIconDrop === "function") && invBtn;
+
+  // если вдруг нет fx — оставляем старое поведение
+  if (!canDrop) {
+    const text = arr.join("\n");
+    setTimeout(() => showLootOverMob(m, text, 0), 1000);
+    return;
+  }
+
+  // стартовая позиция (около моба)
+  let x, y;
+  if (m && m.el && wrapper) {
+    const mobRect  = m.el.getBoundingClientRect();
+    const wrapRect = wrapper.getBoundingClientRect();
+
+    const cs = getComputedStyle(wrapper);
+    let scale = parseFloat(cs.getPropertyValue("--ui-scale"));
+    if (!Number.isFinite(scale) || scale <= 0) scale = 1;
+
+    x = ((mobRect.left - wrapRect.left) + (mobRect.width  / 2)) / scale;
+    y = ((mobRect.top  - wrapRect.top)  + (mobRect.height * 0.55)) / scale;
+  } else {
+    x = (wrapper?.clientWidth  || 300) / 2;
+    y = (wrapper?.clientHeight || 600) / 2;
+  }
+
+  // парсим лут и накапливаем суммы
+  const gain = { coins: 0, wood: 0, ore: 0 };
+  const drops = [];
+
+  for (const s of arr) {
+    // 🪵 +12
+    let m1 = String(s).match(/^🪵\s*\+(\d+)/);
+    if (m1) { gain.wood += parseInt(m1[1], 10); drops.push("wood"); continue; }
+
+    // __ORE__ +7
+    let m2 = String(s).match(/^__ORE__\s*\+(\d+)/);
+    if (m2) { gain.ore += parseInt(m2[1], 10); drops.push("ore"); continue; }
+
+    // coins: +15  (или coins +15)
+    let m3 = String(s).match(/^coins\s*:?\s*\+(\d+)/i);
+    if (m3) { gain.coins += parseInt(m3[1], 10); drops.push("coins"); continue; }
+  }
+
+  if (!drops.length) {
+    // если пришли неизвестные строки — показываем как раньше
+    const text = arr.join("\n");
+    setTimeout(() => showLootOverMob(m, text, 0), 1000);
+    return;
+  }
 
   setTimeout(() => {
-    showLootOverMob(m, text, 0);
-  }, 1000); // ✅ чуть позже урона
+
+  const spreadRadius = 28; // радиус рассыпания
+
+  drops.forEach((type, i) => {
+
+    // равномерное распределение по окружности
+    const angle = (i / drops.length) * Math.PI * 2;
+
+    const offsetX = Math.cos(angle) * spreadRadius;
+    const offsetY = Math.sin(angle) * (spreadRadius * 0.6);
+
+    window.spawnLootIconDrop({
+      x: x + offsetX,
+      y: y + offsetY,
+      iconType: type,
+      targetEl: invBtn
+    });
+  });
+
+}, 250);
+
+
+  // 2) когда "долетели" — показать текст над инвентарём (один раз суммарно)
+  const arriveMs = 250 + 450 + 600 + 120; // delay + fall + pause + небольшой запас
+  setTimeout(() => {
+    const parts2 = [];
+    if (gain.coins) parts2.push(`💰 +${gain.coins}`);
+    if (gain.wood)  parts2.push(`🪵 +${gain.wood}`);
+    if (gain.ore)   parts2.push(`⛏ +${gain.ore}`);
+
+    const text = parts2.join("   ");
+    if (text && typeof window.spawnInvGainText === "function") {
+      window.spawnInvGainText({ targetEl: invBtn, text });
+    }
+  }, arriveMs);
 };
+
 
 window.bossShowLoot = window.showLootFloat;
 

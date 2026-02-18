@@ -11,7 +11,7 @@ from .upgrades import BOSSES
 
 # Render Disk: монтируется в /data
 # Локально тоже ок — файл создастся рядом, если /data недоступен
-DB_PATH = os.environ.get("DB_PATH", "/data/players.db")
+DB_PATH = os.environ.get("DB_PATH", "data/players.db")
 
 
 def _conn() -> sqlite3.Connection:

@@ -1576,14 +1576,28 @@ if (hpNameEl) hpNameEl.style.display = "none";
   const holdMs  = (opts.holdMs  ?? 2000);
   const fadeMs  = (opts.fadeMs  ?? 1200);
 
-  // фиксируем “умирает” — чтобы waveTick/Hit не лезли в спрайт
   m.isDeadAnim = true;
-  m.isAttacking = false;
-  m.isHit = false;
-  m.pendingHit = false;
-  m.atkFrames = null;
-  m.hitFrames = null;
-  m.el.classList.remove("mob--atk");
+m.isAttacking = false;
+m.isHit = false;
+m.pendingHit = false;
+m.atkFrames = null;
+m.hitFrames = null;
+
+// ✅ ФИКС МИГАНИЯ: если смерть срабатывает во время атаки,
+// класс .mob--atk резко меняет size/transform -> видно "blink" на 1 кадр.
+// Замораживаем вычисленные стили и только потом снимаем mob--atk.
+try {
+  const cs = getComputedStyle(m.el);
+  m.el.style.width = cs.width;
+  m.el.style.height = cs.height;
+  m.el.style.marginLeft = cs.marginLeft;
+  m.el.style.transform = cs.transform;
+  m.el.style.backgroundSize = cs.backgroundSize;
+  m.el.style.backgroundPosition = cs.backgroundPosition;
+} catch (e) {}
+
+m.el.classList.remove("mob--atk");
+
 
   // сброс визуальных стилей перед смертью
   m.el.style.transition = "none";

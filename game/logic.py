@@ -266,7 +266,7 @@ def handle_craft(state: PlayerState, recipe_id: str) -> dict:
 
     # ресурсы: с 4 lvl кузницы — 2 типа ресурсов (фиксированные количества)
     if forge_lvl >= 4:
-        resources_cost = {"wood": 2, "ore": 2}
+        resources_cost = {"wood": 3, "ore": 2}
     else:
         resources_cost = {"wood": 1}
 

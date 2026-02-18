@@ -796,35 +796,55 @@ def server_tick(state: PlayerState) -> dict:
     """
     Серверный тик (фронт вызывает раз в ~1 сек).
     Считает regen и bleed по времени.
-    Возвращает event с bleed_damage.
+    Возвращает event, где есть явный флаг смерти, если bleed добил босса.
     """
     now = time.time()
 
-    # если вдруг включишь сундук — при boss_dead тут можно просто ничего не делать
     if state.get("boss_dead", False):
         return {"ok": True, "bleed_damage": 0, "boss_regen": 0}
+
+    # важно: запомним HP до тика, чтобы фронт мог понять, что босс реально умер
+    hp_before = int(state.get("boss_hp", 0))
 
     boss_regen = apply_boss_regen(state, now)
     bleed_damage = apply_bleed_ticks(state, now)
 
+    # hp после bleed/regen, но ДО возможного респавна
+    hp_after_damage = int(state.get("boss_hp", 0))
+
     death_event = None
-    # если bleed добил босса — награду выдаём тут
-    if state.get("boss_hp", 0) <= 0 and not state.get("boss_dead", False):
+    died = False
+
+    # если bleed добил босса — выдаём награду (как и в ударах)
+    if hp_after_damage <= 0 and not state.get("boss_dead", False):
+        died = True
         state["boss_dead"] = True
+
         boss_lvl = int(state.get("boss_lvl", 1))
         cfg = get_boss_config(boss_lvl) or {}
+
+        # ВАЖНО: эта функция у тебя респавнит босса (делает HP снова max)
         death_event = _handle_boss_death_autoloot(state, boss_lvl, cfg)
+
         state["boss_dead"] = False
 
     return {
         "ok": True,
         "bleed_damage": int(bleed_damage),
         "boss_regen": int(boss_regen),
+
+        # для фронта: что было ДО и ПОСЛЕ урона (до респавна)
+        "boss_hp_before": int(hp_before),
+        "boss_hp_after_damage": int(hp_after_damage),
+
+        # текущие значения state (после возможного респавна)
         "boss_hp": int(state.get("boss_hp", 0)),
         "boss_max_hp": int(state.get("boss_max_hp", 0)),
+
+        # главное: явный флаг смерти + детали награды/XP
+        "boss_died": bool(died),
         "death": death_event,
     }
-
 
 # Уровень босса
 def set_boss(state: PlayerState, boss_lvl: int) -> dict:

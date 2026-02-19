@@ -745,6 +745,17 @@ def server_tick(state: PlayerState) -> dict:
     """
     now = time.time()
 
+    # --- реген энергии ---
+    energy = float(state.get("player_energy", 0))
+    energy_max = float(state.get("player_energy_max", 0))
+    regen = float(state.get("player_energy_regen", 0))
+
+    energy += regen
+    if energy > energy_max:
+        energy = energy_max
+
+    state["player_energy"] = int(energy)
+
     if state.get("boss_dead", False):
         return {"ok": True, "bleed_damage": 0, "boss_regen": 0}
 
@@ -777,6 +788,9 @@ def server_tick(state: PlayerState) -> dict:
         "ok": True,
         "bleed_damage": int(bleed_damage),
         "boss_regen": int(boss_regen),
+
+        "player_energy": int(state.get("player_energy", 0)),
+        "player_energy_max": int(state.get("player_energy_max", 0)),
 
         # для фронта: что было ДО и ПОСЛЕ урона (до респавна)
         "boss_hp_before": int(hp_before),
@@ -873,8 +887,14 @@ def add_player_xp(state: PlayerState, xp_gain: int) -> dict:
 
 def use_heavy_blow(state: PlayerState) -> dict:
     now = time.time()
+    ENERGY_COST = 40
     regen_heal = 0
     bleed_damage = 0
+
+    if int(state.get("player_energy", 0)) < ENERGY_COST:
+        return {"ok": False, "reason": "no_energy"}
+
+    state["player_energy"] -= ENERGY_COST
 
     # --- CD ---
     cd_until = float(state.get("skill_cd_until", {}).get("heavy_blow", 0))
@@ -898,6 +918,7 @@ def use_heavy_blow(state: PlayerState) -> dict:
             "skill": "heavy_blow",
             "damage": 0,
             "dodged": True,
+            "player_energy": int(state.get("player_energy", 0)),
             "boss_hp": int(state.get("boss_hp", 0)),
         }
 

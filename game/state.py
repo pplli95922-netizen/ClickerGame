@@ -47,6 +47,11 @@ def create_state(name: str) -> PlayerState:
         "weapon_roll": 1.0,
         "attack": 10.0,
 
+        #Енергия
+        "player_energy": 100,
+        "player_energy_max": 100,
+        "player_energy_regen": 5,  # в секунду
+
         # кузница
         "forge_lvl": 1,
         "forge_xp": 0,

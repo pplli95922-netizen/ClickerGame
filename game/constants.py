@@ -56,6 +56,15 @@ HEAVY_BLOW_CD = 20.0        # Секунды
 HEAVY_BLOW_DMG_MIN = 5.0    # 500%
 HEAVY_BLOW_DMG_MAX = 15.0   # 1500%
 
+# ---------- Guard Break (anti-regen) ----------
+# Снижает лечение от regen босса на 80% на короткое время.
+GUARD_BREAK_ID = "guard_break"
+GUARD_BREAK_CD = 18.0
+GUARD_BREAK_ENERGY_COST = 20
+GUARD_BREAK_DURATION = 5.0   # секунды (если надо — поменяешь)
+GUARD_BREAK_REGEN_MULT = 0.2 # 20% от обычного лечения (т.е. -80%)
+
+
 # ---------- Player XP / Level ----------
 PLAYER_XP_PER_BOSS_BASE = 20
 PLAYER_XP_PER_BOSS_GROWTH = 1.18

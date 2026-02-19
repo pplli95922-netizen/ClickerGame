@@ -15,6 +15,7 @@ from game.logic import (
     set_boss,
     use_heavy_blow,
     server_tick,
+    use_guard_break,
 )
 from game.storage import load_state, save_state
 
@@ -126,6 +127,9 @@ def api_use_skill(payload: Dict[str, Any]):
 
     elif skill_id == "heavy_blow":
         event = use_heavy_blow(state)
+
+    elif skill_id == "guard_break":
+        event = use_guard_break(state)
 
     else:
         # важно: всегда возвращаем state, чтобы фронт не ломался

@@ -29,6 +29,11 @@ from .constants import (
     HEAVY_BLOW_DMG_MAX,
     CRAFT_COINS_BASE,
     CRAFT_COINS_GROWTH,
+    GUARD_BREAK_ID,
+    GUARD_BREAK_CD,
+    GUARD_BREAK_ENERGY_COST,
+    GUARD_BREAK_DURATION,
+    GUARD_BREAK_REGEN_MULT,
 
 
 )
@@ -569,6 +574,11 @@ def apply_boss_regen(state: PlayerState, now: float) -> int:
         return 0
 
     heal = int(max_hp * regen_pct)
+    # --- Guard Break: режем лечение от регена на 80% ---
+    gb = state.get("boss_guard_break") or {}
+    gb_until = float(gb.get("expires_at", 0.0) or 0.0)
+    if now < gb_until:
+        heal = int(heal * float(GUARD_BREAK_REGEN_MULT))
     if heal <= 0:
         state["boss_last_regen_ts"] = now
         return 0
@@ -728,6 +738,10 @@ def _handle_boss_death_autoloot(state: PlayerState, boss_lvl: int, cfg: dict) ->
         state["boss_bleed"]["dps_per_stack"] = 0
         state["boss_bleed"]["expires_at"] = 0.0
         state["boss_bleed"]["last_tick_ts"] = 0.0
+
+    # сброс Guard Break
+    if "boss_guard_break" in state and isinstance(state["boss_guard_break"], dict):
+        state["boss_guard_break"]["expires_at"] = 0.0
 
     return {
         "killed": True,
@@ -984,4 +998,50 @@ def use_heavy_blow(state: PlayerState) -> dict:
         "dodged": False,
         "boss_hp": int(state.get("boss_hp", 0)),
         "boss_max_hp": int(state.get("boss_max_hp", 0)),
+    }
+
+
+def use_guard_break(state: PlayerState) -> dict:
+    """
+    Guard Break (anti-regen)
+    - Стоимость: 20 энергии
+    - CD: 18с
+    - Эффект: режет лечение от регена босса на 80% на GUARD_BREAK_DURATION
+    """
+    now = time.time()
+
+    # --- энергия ---
+    if int(state.get("player_energy", 0)) < int(GUARD_BREAK_ENERGY_COST):
+        return {"ok": False, "reason": "no_energy"}
+
+    # --- CD ---
+    cd_until = float(state.get("skill_cd_until", {}).get(GUARD_BREAK_ID, 0))
+    if now < cd_until:
+        return {"ok": False, "reason": "cooldown", "remain": round(cd_until - now, 2)}
+
+    # --- если босс мёртв ---
+    if state.get("boss_dead", False):
+        return {"ok": False, "reason": "boss_dead"}
+
+    # списать энергию
+    state["player_energy"] -= int(GUARD_BREAK_ENERGY_COST)
+
+    # применить эффект
+    gb = state.setdefault("boss_guard_break", {"expires_at": 0.0})
+    gb["expires_at"] = float(now + float(GUARD_BREAK_DURATION))
+
+    # поставить КД
+    state.setdefault("skill_cd_until", {})[GUARD_BREAK_ID] = float(now + float(GUARD_BREAK_CD))
+
+    return {
+        "ok": True,
+        "skill": GUARD_BREAK_ID,
+        "player_energy": int(state.get("player_energy", 0)),
+        "boss_hp": int(state.get("boss_hp", 0)),
+        "effect": {
+            "name": "guard_break",
+            "regen_mult": float(GUARD_BREAK_REGEN_MULT),
+            "duration": float(GUARD_BREAK_DURATION),
+        },
+        "cd": float(GUARD_BREAK_CD),
     }

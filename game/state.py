@@ -73,6 +73,12 @@ def create_state(name: str) -> PlayerState:
             "expires_at": 0.0,
             "last_tick_ts": 0.0,
         },
+
+                # Guard Break (anti-regen)
+        # expires_at: пока now < expires_at — лечение от регена босса режется
+        "boss_guard_break": {
+            "expires_at": 0.0,
+        },
     
 
         # ресурсы

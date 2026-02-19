@@ -526,19 +526,18 @@ button {
 
 .skills-panel{
   position: absolute;
-  left: 50%;
-  bottom: 15px; /* как у .bottom-menu */
-  transform: translate(-50%, calc(-100% - 0px)); /* подняли выше */
+  left: 0;
+  right: 0;
+  bottom: 15px;                 /* как у .bottom-menu */
+  transform: translateY(calc(-100% - 0px)); /* подняли выше */
   z-index: 25;
 
-  /* размер кнопок и расстояние */
-  --s: clamp(60px, 16vw, 84px);
-  --g: clamp(8px, 2.2vw, 12px);
+  box-sizing: border-box;
+  padding: 0 14px;              /* чтобы тени/скругления не резались по краям */
 
   display: grid;
-  grid-template-columns: repeat(5, var(--s)); /* 5 в ряд */
-  grid-auto-rows: var(--s);
-  gap: var(--g);
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
 
   justify-content: center;
   align-items: center;
@@ -549,10 +548,12 @@ button {
 
 
 
+
 /* square skill button */
 .skill-btn{
-   width: var(--s);
-   height: var(--s);
+   width: 100%;
+height: auto;
+aspect-ratio: 1 / 1;
 
   padding: 0;
 

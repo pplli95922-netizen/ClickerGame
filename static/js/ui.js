@@ -79,6 +79,13 @@ const lootModal = document.getElementById("lootModal");
 const lootText  = document.getElementById("lootText");
 const collectBtn = document.getElementById("collectBtn");
 const woodTxt = document.getElementById("woodTxt");
+const heroHudLvl = document.getElementById("heroHudLvl");
+const heroHpFill = document.getElementById("heroHpFill");
+const heroHpText = document.getElementById("heroHpText");
+const heroMpFill = document.getElementById("heroMpFill");
+const heroMpText = document.getElementById("heroMpText");
+const heroExpFill = document.getElementById("heroExpFill");
+const heroXpText = document.getElementById("heroXpText");
 const itemModal = document.getElementById("itemModal");
 const itemModalBackdrop = document.getElementById("itemModalBackdrop");
 const itemModalClose = document.getElementById("itemModalClose");
@@ -775,6 +782,26 @@ if (skillBtn2) {
   if (coinsTxt) coinsTxt.textContent = "💰 " + (coins ?? 0);
   if (woodTxt) woodTxt.textContent = (resources && resources.wood) ? resources.wood : 0;
   if (oreTxt) oreTxt.textContent = (resources && resources.ore !== undefined) ? resources.ore : 0;
+  // ===== HERO HUD RENDER =====
+if (heroHudLvl) heroHudLvl.textContent = `LVL ${Math.max(1, Number(window.player_lvl ?? player_lvl) || 1)}`;
+
+const _hpMax = Math.max(1, Number(window.hp_max ?? hp_max) || 1);
+const _hp = Math.max(0, Number(window.hp ?? hp) || 0);
+const _hpPct = Math.max(0, Math.min(100, (_hp / _hpMax) * 100));
+if (heroHpFill) heroHpFill.style.width = _hpPct + "%";
+if (heroHpText) heroHpText.textContent = `${Math.round(_hp)} / ${Math.round(_hpMax)}`;
+
+const _mpMax = Math.max(1, Number(window.mana_max ?? mana_max) || 1);
+const _mp = Math.max(0, Number(window.mana ?? mana) || 0);
+const _mpPct = Math.max(0, Math.min(100, (_mp / _mpMax) * 100));
+if (heroMpFill) heroMpFill.style.width = _mpPct + "%";
+if (heroMpText) heroMpText.textContent = `${Math.round(_mp)} / ${Math.round(_mpMax)}`;
+
+const _xpNeed = Math.max(1, Number(window.player_xp_need ?? player_xp_need) || 1);
+const _xp = Math.max(0, Number(window.player_xp ?? player_xp) || 0);
+const _xpPct = Math.max(0, Math.min(100, (_xp / _xpNeed) * 100));
+if (heroExpFill) heroExpFill.style.width = _xpPct + "%";
+if (heroXpText) heroXpText.textContent = `XP: ${Math.round(_xp)} / ${Math.round(_xpNeed)}`;
 
   refreshNextBtn();
 }

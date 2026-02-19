@@ -55,7 +55,7 @@
 
 .player-name {
   position: absolute;
-  top: 8px;
+  top: 70px;
   left: 10px;
   color: #fff;
   font-size: 16px;
@@ -63,6 +63,73 @@
   text-shadow: 0 0 4px #000;
   z-index: 5; /* чтобы был поверх фона и босса */
 }
+
+/* ===== HERO HUD (HP/MP/EXP/LVL) ===== */
+.hero-hud{
+  position: absolute;
+  top: 90px;   /* ниже имени */
+  left: 10px;
+  width: 220px;
+  z-index: 6;
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 0 4px rgba(0,0,0,.9);
+}
+
+.hero-hud__top{
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 6px;
+  font-size: 12px;
+  opacity: .95;
+}
+
+.hero-hud__bar{
+  position: relative;
+  height: 12px;
+  margin-bottom: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.hero-hud__bar--exp{
+  height: 5px;
+  margin-bottom: 6px;
+}
+
+.hero-hud__fill{
+  height: 100%;
+  width: 100%;
+  transition: width 0.18s linear;
+}
+
+.hero-hud__fill--hp{
+  background: linear-gradient(90deg, #7a0000, #ff2a2a);
+}
+
+.hero-hud__fill--mp{
+  background: linear-gradient(90deg, #003c7a, #2a8dff);
+}
+
+.hero-hud__fill--exp{
+  background: linear-gradient(90deg, #8b6a00, #ffd700);
+}
+
+.hero-hud__txt{
+  position: absolute;
+  right: 6px;
+  top: 0;
+  line-height: 12px;
+  font-size: 10px;
+  opacity: .95;
+}
+
+.hero-hud__xp{
+  font-size: 10px;
+  opacity: .9;
+}
+
 
 .boss-hp-wrapper{
   position: absolute;
@@ -156,18 +223,6 @@
 .res-item span[id]{
   color: #ffffff;
 }
-
-.player-name {
-  position: absolute;
-  top: 70px;
-  left: 10px;
-  color: #fff;
-  font-size: 16px;
-  font-weight: bold;
-  text-shadow: 0 0 4px #000;
-  z-index: 5; /* чтобы был поверх фона и босса */
-}
-
 /* ===== LOOT MODAL ===== */
 
 .loot-overlay {
@@ -233,7 +288,7 @@
 /* ===== Boss LVL badge (main screen) ===== */
 .boss-lvl-badge{
   position: absolute;
-  top: 90px;
+  top: 180px;
   left: 10px;
   z-index: 6;
 

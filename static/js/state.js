@@ -33,6 +33,15 @@ console.log("USER_ID from URL/Telegram =", USER_ID, "name =", playerName)
 
 let coins = 0;
 let attack = 0;
+let player_lvl = 1;
+let player_xp = 0;
+let player_xp_need = 100;
+
+let hp = 100;
+let hp_max = 100;
+
+let mana = 50;
+let mana_max = 50;
 let boss_dead = false;
 let boss_hp = 0;
 let boss_max_hp = 0;
@@ -121,6 +130,21 @@ function applyState(st) {
 
   if (st.coins !== undefined) coins = Number(st.coins) || 0;
   if (st.attack !== undefined) attack = Number(st.attack) || 0;
+
+  // ===== HERO STATS FROM BACKEND =====
+if (st.player_lvl !== undefined) player_lvl = Math.max(1, Number(st.player_lvl) || 1);
+if (st.player_xp !== undefined) player_xp = Math.max(0, Number(st.player_xp) || 0);
+
+// xp_need может прийти как player_xp_need (если добавите позже) — поддержим сразу
+if (st.player_xp_need !== undefined) player_xp_need = Math.max(1, Number(st.player_xp_need) || 1);
+
+// HP
+if (st.hp_max !== undefined) hp_max = Math.max(1, Number(st.hp_max) || 1);
+if (st.hp !== undefined) hp = Math.max(0, Number(st.hp) || 0);
+
+// MANA
+if (st.mana_max !== undefined) mana_max = Math.max(1, Number(st.mana_max) || 1);
+if (st.mana !== undefined) mana = Math.max(0, Number(st.mana) || 0);
 
   const hpRaw =
   st.boss_hp ?? st.mob_hp ?? st.enemy_hp ?? st.current_hp;
@@ -330,6 +354,13 @@ function buildState() {
 
     // бой/босс
     attack: attack,
+    player_lvl: player_lvl,
+player_xp: player_xp,
+player_xp_need: player_xp_need,
+hp: hp,
+hp_max: hp_max,
+mana: mana,
+mana_max: mana_max,
     boss_lvl: boss_lvl,
 
 // ✅ то, что реально есть у бэка

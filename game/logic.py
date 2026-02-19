@@ -29,9 +29,6 @@ from .constants import (
     HEAVY_BLOW_DMG_MAX,
     CRAFT_COINS_BASE,
     CRAFT_COINS_GROWTH,
-    WEAPON_MODIFIER_IDS,
-    BLEEDING_EDGE_BY_RARITY,
-    EXECUTION_BY_RARITY,
 
 
 )
@@ -98,12 +95,6 @@ def check_chance(probability_0_to_1: float) -> bool:
     return random.random() < probability_0_to_1
 
 
-
-def roll_weapon_modifier_id() -> str:
-    # сейчас у нас пока 1 мод, позже будет 10
-    return random.choice(WEAPON_MODIFIER_IDS)
-
-
 def apply_bleed_ticks(state: PlayerState, now: float) -> int:
     """
     Тикающий урон bleed раз в 1 секунду.
@@ -148,78 +139,6 @@ def apply_bleed_ticks(state: PlayerState, now: float) -> int:
     state["boss_bleed"]["last_tick_ts"] = last + ticks * 1.0
     return dealt
 
-
-def try_apply_bleeding_edge(state: PlayerState, now: float, atk_for_scaling: int) -> dict | None:
-    """
-    Если экипирован мод bleeding_edge — может повесить/обновить bleed.
-    Возвращает event для фронта или None.
-    """
-    eq = state.get("equipped_weapon") or {}
-    mod = (eq.get("modifier") or {})
-    if mod.get("id") != "bleeding_edge":
-        return None
-
-    rarity = str(eq.get("rarity", "common"))
-    cfg = BLEEDING_EDGE_BY_RARITY.get(rarity)
-    if not cfg:
-        return None
-
-    if not check_chance(float(cfg["chance"])):
-        return None
-
-    bleed = state.get("boss_bleed") or {"stacks": 0, "dps_per_stack": 0, "expires_at": 0.0, "last_tick_ts": 0.0}
-    stacks = int(bleed.get("stacks", 0) or 0)
-    max_stacks = int(cfg["max_stacks"])
-    stacks = min(max_stacks, stacks + 1)
-
-    dps_per_stack = int(int(atk_for_scaling) * float(cfg["dps_pct"]))
-    if dps_per_stack < 1:
-        dps_per_stack = 1
-
-    state["boss_bleed"] = {
-        "stacks": stacks,
-        "dps_per_stack": dps_per_stack,
-        "expires_at": now + float(cfg["duration"]),
-        "last_tick_ts": float(bleed.get("last_tick_ts", 0.0) or now),
-    }
-
-    return {"applied": True, "stacks": stacks, "dps_per_stack": dps_per_stack, "duration": float(cfg["duration"])}
-
-def try_apply_execution_bonus(state: PlayerState, damage: int) -> tuple[int, dict | None]:
-    """
-    Если мод execution — увеличиваем урон, когда босс ниже порога HP.
-    Возвращает (новый_урон, event или None)
-    """
-    eq = state.get("equipped_weapon") or {}
-    mod = (eq.get("modifier") or {})
-    if mod.get("id") != "execution":
-        return damage, None
-
-    rarity = str(eq.get("rarity", "common"))
-    cfg = EXECUTION_BY_RARITY.get(rarity)
-    if not cfg:
-        return damage, None
-
-    boss_hp = int(state.get("boss_hp", 0) or 0)
-    boss_max = int(state.get("boss_max_hp", 0) or 0)
-    if boss_max <= 0 or boss_hp <= 0:
-        return damage, None
-
-    hp_pct = boss_hp / boss_max
-    if hp_pct > float(cfg["hp_pct"]):
-        return damage, None
-
-    new_damage = int(int(damage) * float(cfg["bonus_mult"]))
-    if new_damage < damage:
-        new_damage = damage
-
-    return new_damage, {
-        "triggered": True,
-        "hp_pct": round(hp_pct, 4),
-        "threshold": float(cfg["hp_pct"]),
-        "mult": float(cfg["bonus_mult"]),
-        "bonus": int(new_damage - damage),
-    }
 
 
 def scale_cost(base: int, forge_lvl: int) -> int:
@@ -492,10 +411,6 @@ def craft_success_add_weapon(
         "crit_chance": float(crit_data["chance"]) if crit_data else 0.0,
         "crit_mult": float(crit_data["mult"]) if crit_data else 1.0,
 
-        "modifier": {
-            "id": roll_weapon_modifier_id(),
-        },
-
         "cost": {
             "coins": int(cost_coins),
             "resources": dict(cost_resources or {}),
@@ -715,11 +630,7 @@ def use_core_strike(state: PlayerState) -> dict:
         else:
             damage_done = damage
 
-            # execution (если прокнул)
-            damage_done, exec_event = try_apply_execution_bonus(state, damage_done)
-
             state["boss_hp"] = max(0, int(state["boss_hp"]) - damage_done)
-            bleed_apply = try_apply_bleeding_edge(state, now, int(state.get("attack", 1)))
     
     
     # --- смерть босса: сразу выдаём награду и респавним босса ---
@@ -773,10 +684,6 @@ def use_core_strike(state: PlayerState) -> dict:
     "damage": int(damage_done),
     "crit": is_crit,
     "dodged": dodged,
-
-    "bleed_damage": int(bleed_damage),
-    "execution": exec_event,
-
     "boss_hp": int(state.get("boss_hp", 0)),
     "boss_max_hp": int(state.get("boss_max_hp", 0)),
     "boss_regen": int(regen_heal),
@@ -1001,7 +908,6 @@ def use_heavy_blow(state: PlayerState) -> dict:
 
     # --- применяем урон ---
     state["boss_hp"] = max(0, int(state.get("boss_hp", 0)) - damage)
-    bleed_apply = try_apply_bleeding_edge(state, now, int(state.get("attack", 1)))
 
 
     # --- смерть босса: сразу выдаём награду и респавним босса ---
@@ -1054,7 +960,6 @@ def use_heavy_blow(state: PlayerState) -> dict:
         "ok": True,
         "skill": "heavy_blow",
         "damage": damage,
-        "bleed_damage": int(bleed_damage),
         "dodged": False,
         "boss_hp": int(state.get("boss_hp", 0)),
         "boss_max_hp": int(state.get("boss_max_hp", 0)),

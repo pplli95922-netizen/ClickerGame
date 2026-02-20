@@ -769,32 +769,33 @@ if (st && ev && typeof ev === "object") {
 }
 
     
-    // ===== FIX: отдельный КД для каждого навыка =====
+// ===== FIX: отдельный КД для каждого навыка =====
 const usedId = String(skill_id || "core_strike");
 
 if (st) {
-  // cd может прийти в event, а не в state
   const evCd =
     data?.event?.skill_cd ?? data?.event?.cooldown ?? data?.event?.cd;
 
-  // берём cd из state/event
-  const cdFromState = (st.skill2_cd ?? st.skill_cd);
+  // берём cd из state/event (тут учитываем и skill3_cd тоже)
+  const cdFromState = (st.skill3_cd ?? st.skill2_cd ?? st.skill_cd);
   const cd = (cdFromState !== undefined) ? cdFromState : evCd;
 
-  // кладём cd в правильное поле
   if (cd !== undefined) {
     if (usedId === "heavy_blow") st.skill2_cd = cd;
+    else if (usedId === "guard_break") st.skill3_cd = cd;
     else st.skill_cd = cd;
   }
 
   // дефолты, если сервер не прислал
   if (usedId === "core_strike" && st.skill_cd === undefined) st.skill_cd = 1.3;
   if (usedId === "heavy_blow"  && st.skill2_cd === undefined) st.skill2_cd = 20;
+  if (usedId === "guard_break" && st.skill3_cd === undefined) st.skill3_cd = 18;
 
-  // КРИТИЧНО: второй навык не должен трогать КД первого
+  // второй навык не должен трогать КД первого
   if (usedId === "heavy_blow") delete st.skill_cd;
+  // третий навык тоже не должен трогать КД первого
+  if (usedId === "guard_break") delete st.skill_cd;
 }
-
 
 
 

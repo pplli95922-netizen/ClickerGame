@@ -142,9 +142,13 @@ if (st.player_xp_need !== undefined) player_xp_need = Math.max(1, Number(st.play
 if (st.hp_max !== undefined) hp_max = Math.max(1, Number(st.hp_max) || 1);
 if (st.hp !== undefined) hp = Math.max(0, Number(st.hp) || 0);
 
-// MANA
-if (st.mana_max !== undefined) mana_max = Math.max(1, Number(st.mana_max) || 1);
-if (st.mana !== undefined) mana = Math.max(0, Number(st.mana) || 0);
+// MANA (бек присылает player_energy / player_energy_max)
+if (st.player_energy_max !== undefined) mana_max = Math.max(1, Number(st.player_energy_max) || 1);
+if (st.player_energy !== undefined) mana = Math.max(0, Number(st.player_energy) || 0);
+
+// чтобы ui.js всегда видел актуальные значения
+window.mana = mana;
+window.mana_max = mana_max;
 
   const hpRaw =
   st.boss_hp ?? st.mob_hp ?? st.enemy_hp ?? st.current_hp;

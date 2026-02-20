@@ -113,6 +113,8 @@ let pendingSkillAttack = false;
 let pendingSkillRequest = false;
 let pendingSkill2Attack = false;
 let pendingSkill2Request = false;
+let pendingSkill3Attack = false;
+let pendingSkill3Request = false;
 let battlePaused = false;
 
 window.__battleBgRafId = window.__battleBgRafId || null;
@@ -644,6 +646,29 @@ function trySkill2Attack(){
 
 window.trySkill2Attack = trySkill2Attack;
 
+function trySkill3Attack(){
+  if (battlePaused) return false;
+  if (mode !== MODE.FIGHT) return false;
+  if (!getNearestMobInRange(160)) return false;
+  if (pendingSkill3Request) return false;
+
+  if (heroIsHit) {
+    pendingSkill3Attack = true;
+    pendingSkill3Request = true;
+    return false;
+  }
+
+  if (heroIsAttacking) return false;
+
+  // анти-реген — визуально используем вторую атаку, чтобы было "каст"
+  playHeroAttack2();
+
+  if (typeof window.useSkill === "function") window.useSkill("guard_break");
+
+  return true;
+}
+
+window.trySkill3Attack = trySkill3Attack;
 
 function playHeroHit(){
   if (!heroEl) return;
@@ -692,6 +717,19 @@ if (pendingSkill2Attack) {
     pendingSkill2Request = false;
     if (typeof window.useSkill === "function") window.useSkill("heavy_blow");
 
+  }
+
+  return;
+}
+
+if (pendingSkill3Attack) {
+  pendingSkill3Attack = false;
+
+  playHeroAttack2();
+
+  if (pendingSkill3Request) {
+    pendingSkill3Request = false;
+    if (typeof window.useSkill === "function") window.useSkill("guard_break");
   }
 
   return;

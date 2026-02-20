@@ -389,7 +389,9 @@ boss_lvl_max_reached: boss_lvl_max_reached,
     // инвентарь/экип (если сервер это хранит)
     inventory: inventory,
     equipped_weapon_id: equipped_weapon_id,
-    skill_cd: (typeof window.skill_cd === "number" ? window.skill_cd : skill_cd)
+    skill_cd: (typeof window.skill_cd === "number" ? window.skill_cd : skill_cd),
+skill2_cd: (typeof window.skill2_cd === "number" ? window.skill2_cd : undefined),
+skill3_cd: (typeof window.skill3_cd === "number" ? window.skill3_cd : undefined)
 
 
   };

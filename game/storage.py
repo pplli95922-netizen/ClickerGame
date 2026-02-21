@@ -62,6 +62,10 @@ def _apply_backfill_and_derived(state: PlayerState) -> PlayerState:
 
     if "player_energy_regen" not in state:
         state["player_energy_regen"] = 10
+    
+        # adrenaline buff backfill
+    if "adrenaline_until" not in state:
+        state["adrenaline_until"] = 0.0
 
     # derived поля
     state["forge_xp_need"] = int(forge_xp_needed(state.get("forge_lvl", 1)))

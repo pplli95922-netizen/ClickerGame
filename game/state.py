@@ -79,7 +79,8 @@ def create_state(name: str) -> PlayerState:
         "boss_guard_break": {
             "expires_at": 0.0,
         },
-    
+        #Аdrenaline
+        "adrenaline_until": 0.0,
 
         # ресурсы
         "resources": {

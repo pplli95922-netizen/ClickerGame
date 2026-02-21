@@ -65,6 +65,15 @@ GUARD_BREAK_DURATION = 5.0   # секунды (если надо — помен�
 GUARD_BREAK_REGEN_MULT = 0.2 # 20% от обычного лечения (т.е. -80%)
 
 
+# ---------- Adrenaline (buff) ----------
+# Временно ускоряет базовую атаку (core_strike): уменьшает её CD.
+ADRENALINE_ID = "adrenaline"
+ADRENALINE_CD = 25.0
+ADRENALINE_DURATION = 6.0
+ADRENALINE_CORE_CD_MULT = 0.5  # -50% CD у core_strike
+ADRENALINE_ENERGY_COST = 20
+
+
 # ---------- Player XP / Level ----------
 PLAYER_XP_PER_BOSS_BASE = 20
 PLAYER_XP_PER_BOSS_GROWTH = 1.18

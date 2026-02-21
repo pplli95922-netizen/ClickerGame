@@ -34,6 +34,11 @@ from .constants import (
     GUARD_BREAK_ENERGY_COST,
     GUARD_BREAK_DURATION,
     GUARD_BREAK_REGEN_MULT,
+    ADRENALINE_ID,
+    ADRENALINE_CD,
+    ADRENALINE_DURATION,
+    ADRENALINE_CORE_CD_MULT,
+    ADRENALINE_ENERGY_COST,
 
 
 )
@@ -686,7 +691,11 @@ def use_core_strike(state: PlayerState) -> dict:
         state["boss_dead"] = False
 
     # обновляем тайминги
-    cds[CORE_STRIKE_ID] = now + CORE_STRIKE_CD
+    core_cd = float(CORE_STRIKE_CD)
+    adr_until = float(state.get("adrenaline_until", 0.0) or 0.0)
+    if now < adr_until:
+        core_cd = core_cd * float(ADRENALINE_CORE_CD_MULT)
+    cds[CORE_STRIKE_ID] = now + core_cd
 
     return {
     "ok": True,
@@ -1044,4 +1053,34 @@ def use_guard_break(state: PlayerState) -> dict:
             "duration": float(GUARD_BREAK_DURATION),
         },
         "cd": float(GUARD_BREAK_CD),
+    }
+
+
+def use_adrenaline(state: PlayerState) -> dict:
+    now = time.time()
+
+    if state.get("boss_dead", False):
+        return {"ok": False, "reason": "boss_dead"}
+
+    cds = state.setdefault("skill_cd_until", {})
+    cd_until = float(cds.get(ADRENALINE_ID, 0.0) or 0.0)
+    if now < cd_until:
+        return {"ok": False, "reason": "cooldown", "remain": round(cd_until - now, 2)}
+
+    energy = int(state.get("player_energy", 0) or 0)
+    if energy < int(ADRENALINE_ENERGY_COST):
+        return {"ok": False, "reason": "no_energy", "need": int(ADRENALINE_ENERGY_COST), "have": energy}
+
+    state["player_energy"] = energy - int(ADRENALINE_ENERGY_COST)
+
+    state["adrenaline_until"] = now + float(ADRENALINE_DURATION)
+
+    cds[ADRENALINE_ID] = now + float(ADRENALINE_CD)
+
+    return {
+        "ok": True,
+        "skill": ADRENALINE_ID,
+        "duration": float(ADRENALINE_DURATION),
+        "until": float(state["adrenaline_until"]),
+        "player_energy": int(state["player_energy"]),
     }

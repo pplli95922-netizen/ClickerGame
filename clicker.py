@@ -16,6 +16,7 @@ from game.logic import (
     use_heavy_blow,
     server_tick,
     use_guard_break,
+    use_adrenaline,
 )
 from game.storage import load_state, save_state
 
@@ -130,6 +131,9 @@ def api_use_skill(payload: Dict[str, Any]):
 
     elif skill_id == "guard_break":
         event = use_guard_break(state)
+
+    elif skill_id == "adrenaline":
+        event = use_adrenaline(state)
 
     else:
         # важно: всегда возвращаем state, чтобы фронт не ломался

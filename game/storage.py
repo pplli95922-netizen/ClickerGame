@@ -4,8 +4,8 @@ import os
 import sqlite3
 from typing import Optional
 
-from .state import (PlayerState, create_state
-from .logic import forge_xp_needed, get_craft_cost_preview, player_xp_needed, craft_recipe_max_for_forge_lvl, craft_recipe_cap_lvl,
+from .state import PlayerState, create_state
+from .logic import (forge_xp_needed, get_craft_cost_preview, player_xp_needed, craft_recipe_max_for_forge_lvl, craft_recipe_cap_lvl,
 )
 from .upgrades import BOSSES
 

@@ -130,6 +130,7 @@ const forgeEffect = document.getElementById("forgeEffect");
 const skillBtn = document.getElementById("skillBtn");
 const skillBtn2 = document.getElementById("skillBtn2");
 const skillBtn3 = document.getElementById("skillBtn3");
+const skillBtn4 = document.getElementById("skillBtn4");
 const nextWaveBtn = document.getElementById("nextWaveBtn");
 const sceneEl = document.getElementById("scene");
 const bgA = document.getElementById("bgA");
@@ -451,6 +452,23 @@ if (skillBtn3) {
 
     // fallback КД (если бэк не пришлёт отдельный)
     if (ok) startSkill3CooldownUI(18000);
+  });
+}
+
+if (skillBtn4) {
+  skillBtn4.addEventListener("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (skill4CdLeft > 0 || skillBtn4.disabled) {
+      if (typeof showErrorToast === "function") showErrorToast("Навык в КД");
+      return;
+    }
+
+    const ok = (typeof window.trySkill4Attack === "function") ? window.trySkill4Attack() : false;
+
+    // fallback КД (если бэк не пришлёт отдельный)
+    if (ok) startSkill4CooldownUI(25000);
   });
 }
 
@@ -817,6 +835,67 @@ function startSkill3CooldownUI(ms){
   tick();
 }
 
+let skill4CdLeft = 0;
+let skill4CdUntil = 0;
+let skill4CdTotalMs = 0;
+let skill4CdRAF = null;
+
+function stopSkill4CooldownUI(){
+  if (skill4CdRAF) cancelAnimationFrame(skill4CdRAF);
+  skill4CdRAF = null;
+
+  skill4CdUntil = 0;
+  skill4CdTotalMs = 0;
+  skill4CdLeft = 0;
+  window.skill4_cd = 0;
+
+  if (skillBtn4){
+    skillBtn4.disabled = false;
+    skillBtn4.textContent = "💉";
+    skillBtn4.classList.remove("cooldown");
+    skillBtn4.style.removeProperty("--cdp");
+  }
+}
+
+function startSkill4CooldownUI(ms){
+  const dur = Math.max(0, Number(ms) || 0);
+  if (dur <= 0) return stopSkill4CooldownUI();
+
+  if (skill4CdRAF) cancelAnimationFrame(skill4CdRAF);
+  skill4CdRAF = null;
+
+  skill4CdTotalMs = dur;
+  skill4CdUntil = performance.now() + dur;
+
+  const tick = () => {
+    const now = performance.now();
+    const leftMs = Math.max(0, skill4CdUntil - now);
+    const leftSec = leftMs / 1000;
+
+    skill4CdLeft = leftSec;
+    window.skill4_cd = leftSec;
+
+    if (skillBtn4){
+      if (leftMs > 0){
+        skillBtn4.disabled = true;
+        skillBtn4.classList.add("cooldown");
+
+        const pct = Math.max(0, Math.min(100, (leftMs / skill4CdTotalMs) * 100));
+        skillBtn4.style.setProperty("--cdp", pct.toFixed(2) + "%");
+
+        skillBtn4.textContent = "⏳" + leftSec.toFixed(1);
+      } else {
+        stopSkill4CooldownUI();
+        return;
+      }
+    }
+
+    skill4CdRAF = requestAnimationFrame(tick);
+  };
+
+  tick();
+}
+
 function syncUI(st){
     // ===== cooldown навыка =====
 // ===== cooldown навыка (точный, поддерживает 1.3s) =====
@@ -863,6 +942,21 @@ if (skillBtn2) {
   } else {
     if (!skill2CdRAF && (typeof window.skill2_cd === "number") && window.skill2_cd > 0) {
       startSkill2CooldownUI(window.skill2_cd * 1000);
+    }
+  }
+}
+
+if (skillBtn4) {
+  const raw =
+    (st && (st.skill4_cd ?? st.skill4_cd_left ?? st.skill4Cooldown ?? st.skill4_cooldown));
+
+  if (raw !== undefined) {
+    const v = Math.max(0, Number(raw) || 0);
+    const ms = (v > 1000) ? v : (v * 1000);
+    startSkill4CooldownUI(ms);
+  } else {
+    if (!skill4CdRAF && (typeof window.skill4_cd === "number") && window.skill4_cd > 0) {
+      startSkill4CooldownUI(window.skill4_cd * 1000);
     }
   }
 }

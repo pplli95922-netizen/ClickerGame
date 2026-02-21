@@ -55,7 +55,7 @@ def _apply_backfill_and_derived(state: PlayerState) -> PlayerState:
         state["trophy_attack_bonus"] = 0
 
     if "player_energy" not in state:
-    state["player_energy"] = 100
+        state["player_energy"] = 100
 
     if "player_energy_max" not in state:
         state["player_energy_max"] = 100

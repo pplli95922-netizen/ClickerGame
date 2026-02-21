@@ -132,6 +132,9 @@ def api_use_skill(payload: Dict[str, Any]):
     elif skill_id == "guard_break":
         event = use_guard_break(state)
 
+    elif skill_id == "anti_regen":
+        event = use_guard_break(state)
+
     elif skill_id == "adrenaline":
         event = use_adrenaline(state)
 

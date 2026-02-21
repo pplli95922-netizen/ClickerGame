@@ -914,11 +914,6 @@ def use_heavy_blow(state: PlayerState) -> dict:
     regen_heal = 0
     bleed_damage = 0
 
-    if int(state.get("player_energy", 0)) < HEAVY_BLOW_ENERGY_COST:
-        return {"ok": False, "reason": "no_energy"}
-
-    state["player_energy"] -= HEAVY_BLOW_ENERGY_COST
-
     # --- CD ---
     cd_until = float(state.get("skill_cd_until", {}).get("heavy_blow", 0))
     if now < cd_until:
@@ -927,6 +922,13 @@ def use_heavy_blow(state: PlayerState) -> dict:
     # --- если босс мёртв ---
     if state.get("boss_dead", False):
         return {"ok": False, "reason": "boss_dead"}
+
+    # --- energy ---
+    energy = int(state.get("player_energy", 0) or 0)
+    if energy < int(HEAVY_BLOW_ENERGY_COST):
+        return {"ok": False, "reason": "no_energy", "need": int(HEAVY_BLOW_ENERGY_COST), "have": energy}
+
+    state["player_energy"] = energy - int(HEAVY_BLOW_ENERGY_COST)
 
     boss_lvl = int(state.get("boss_lvl", 1))
     cfg = get_boss_config(boss_lvl) or {}
@@ -1004,6 +1006,7 @@ def use_heavy_blow(state: PlayerState) -> dict:
         "ok": True,
         "skill": "heavy_blow",
         "damage": damage,
+        "player_energy": int(state.get("player_energy", 0)),
         "dodged": False,
         "boss_hp": int(state.get("boss_hp", 0)),
         "boss_max_hp": int(state.get("boss_max_hp", 0)),

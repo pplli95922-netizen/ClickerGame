@@ -276,13 +276,20 @@ def handle_craft(state: PlayerState, recipe_id: str) -> dict:
 
     grant_forge_xp = (recipe_sel == recipe_max)
 
-    # --- ХР кузнице даём всегда, но НЕ выше лимита текущего уровня ---
-if grant_forge_xp:
-    state["forge_xp"] = int(state.get("forge_xp", 0) or 0) + int(forge_xp_gain)
-    
-    else:
-        # уже набрано — не копим дальше
+    # --- ХР кузнице: начисляем ТОЛЬКО на максимальном рецепте, и не выше лимита ---
+    xp_need = int(forge_xp_needed(forge_lvl))
+    cur_xp = int(state.get("forge_xp", 0) or 0)
+
+    # если уже набрано — не копим дальше
+    if cur_xp >= xp_need:
         state["forge_xp"] = xp_need
+    else:
+        # добавляем XP только если выбран максимальный рецепт
+        if grant_forge_xp:
+            state["forge_xp"] = min(xp_need, cur_xp + int(FORGE_XP_PER_CRAFT))
+        else:
+            # крафт "назад" — XP кузни не даём
+            state["forge_xp"] = cur_xp
 
     # --- шанс успеха ---
     success = check_chance(success_chance)

@@ -186,6 +186,27 @@ if (lvlRaw !== undefined) boss_lvl = Math.max(1, Number(lvlRaw) || 1);
 window.boss_lvl = Math.max(1, Number(boss_lvl) || 1);
 boss_lvl = window.boss_lvl;
 
+// ===== cooldowns from backend (skill_cd_until) =====
+if (st.skill_cd_until && typeof st.skill_cd_until === "object") {
+  const nowS = Date.now() / 1000;
+
+  const map = {
+    core_strike: "skill_cd",
+    heavy_blow: "skill2_cd",
+    guard_break: "skill3_cd",
+    anti_regen: "skill3_cd",
+    adrenaline: "skill4_cd",
+  };
+
+  for (const [id, field] of Object.entries(map)) {
+    const until = Number(st.skill_cd_until[id]);
+    if (!Number.isFinite(until)) continue;
+
+    const left = Math.max(0, +(until - nowS).toFixed(2));
+    st[field] = left;
+    window[field] = left;
+  }
+}
   const cd =
   st.skill_cd ?? st.skill_cd_left ?? st.skillCooldown ?? st.skill_cooldown;
 
@@ -781,10 +802,19 @@ if (st) {
   const evCd =
     data?.event?.skill_cd ?? data?.event?.cooldown ?? data?.event?.cd;
 
-  // берём cd из state/event (тут учитываем и skill3_cd тоже)
-  const cdFromState = (st.skill3_cd ?? st.skill2_cd ?? st.skill_cd);
-  const cd = (cdFromState !== undefined) ? cdFromState : evCd;
+  // приоритет: skill_cd_until (сервер) -> state -> event
+const cdUntil =
+  (st.skill_cd_until && typeof st.skill_cd_until === "object")
+    ? Number(st.skill_cd_until[usedId])
+    : NaN;
 
+const cdFromUntil =
+  Number.isFinite(cdUntil)
+    ? Math.max(0, +(cdUntil - (Date.now() / 1000)).toFixed(2))
+    : undefined;
+
+const cdFromState = (st.skill3_cd ?? st.skill2_cd ?? st.skill_cd);
+const cd = (cdFromUntil !== undefined) ? cdFromUntil : ((cdFromState !== undefined) ? cdFromState : evCd);
   if (cd !== undefined) {
     if (usedId === "heavy_blow") st.skill2_cd = cd;
     else if (usedId === "guard_break") st.skill3_cd = cd;

@@ -61,7 +61,7 @@ def _apply_backfill_and_derived(state: PlayerState) -> PlayerState:
         state["player_energy_max"] = 100
 
     if "player_energy_regen" not in state:
-        state["player_energy_regen"] = 10
+        state["player_energy_regen"] = 5
     
         # adrenaline buff backfill
     if "adrenaline_until" not in state:

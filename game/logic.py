@@ -39,6 +39,7 @@ from .constants import (
     ADRENALINE_DURATION,
     ADRENALINE_CORE_CD_MULT,
     ADRENALINE_ENERGY_COST,
+    HEAVY_BLOW_ENERGY_COST,
 
 
 )
@@ -780,7 +781,7 @@ def server_tick(state: PlayerState) -> dict:
     state["player_energy"] = int(energy)
 
     if state.get("boss_dead", False):
-        return {"ok": True, "bleed_damage": 0, "boss_regen": 0}
+        return {"ok": True, "bleed_damage": 0, "player_energy": int(state.get("player_energy", 0)), "player_energy_max": int(state.get("player_energy_max", 0)),"boss_regen": 0}
 
     # важно: запомним HP до тика, чтобы фронт мог понять, что босс реально умер
     hp_before = int(state.get("boss_hp", 0))
@@ -910,14 +911,13 @@ def add_player_xp(state: PlayerState, xp_gain: int) -> dict:
 
 def use_heavy_blow(state: PlayerState) -> dict:
     now = time.time()
-    ENERGY_COST = 40
     regen_heal = 0
     bleed_damage = 0
 
-    if int(state.get("player_energy", 0)) < ENERGY_COST:
+    if int(state.get("player_energy", 0)) < HEAVY_BLOW_ENERGY_COST:
         return {"ok": False, "reason": "no_energy"}
 
-    state["player_energy"] -= ENERGY_COST
+    state["player_energy"] -= HEAVY_BLOW_ENERGY_COST
 
     # --- CD ---
     cd_until = float(state.get("skill_cd_until", {}).get("heavy_blow", 0))

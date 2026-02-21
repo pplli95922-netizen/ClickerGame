@@ -5,7 +5,7 @@ import sqlite3
 from typing import Optional
 
 from .state import PlayerState, create_state
-from .logic import forge_xp_needed, get_craft_cost_preview
+from .logic import forge_xp_needed, get_craft_cost_preview, player_xp_needed
 from .upgrades import BOSSES
 
 
@@ -70,6 +70,7 @@ def _apply_backfill_and_derived(state: PlayerState) -> PlayerState:
     # derived поля
     state["forge_xp_need"] = int(forge_xp_needed(state.get("forge_lvl", 1)))
     state["craft_cost_preview"] = get_craft_cost_preview(state)
+    state["player_xp_need"] = int(player_xp_needed(state.get("player_lvl", 1)))
 
     return state
 

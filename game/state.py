@@ -95,6 +95,7 @@ def create_state(name: str) -> PlayerState:
         "equipped_weapon": None,
 
         "craft_cost_preview": {"coins": 0, "resources": {}},
+        "craft_recipe_selected": 1,
         
     }
 

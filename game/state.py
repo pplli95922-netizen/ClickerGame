@@ -47,6 +47,11 @@ def create_state(name: str) -> PlayerState:
         "weapon_roll": 1.0,
         "attack": 10.0,
 
+        #Енергия
+        "player_energy": 100,
+        "player_energy_max": 100,
+        "player_energy_regen": 5,  # в секунду
+
         # кузница
         "forge_lvl": 1,
         "forge_xp": 0,
@@ -68,7 +73,14 @@ def create_state(name: str) -> PlayerState:
             "expires_at": 0.0,
             "last_tick_ts": 0.0,
         },
-    
+
+                # Guard Break (anti-regen)
+        # expires_at: пока now < expires_at — лечение от регена босса режется
+        "boss_guard_break": {
+            "expires_at": 0.0,
+        },
+        #Аdrenaline
+        "adrenaline_until": 0.0,
 
         # ресурсы
         "resources": {

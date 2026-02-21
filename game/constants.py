@@ -55,6 +55,25 @@ CORE_STRIKE_CD = 1.2
 HEAVY_BLOW_CD = 20.0        # Секунды
 HEAVY_BLOW_DMG_MIN = 5.0    # 500%
 HEAVY_BLOW_DMG_MAX = 15.0   # 1500%
+HEAVY_BLOW_ENERGY_COST = 40
+
+# ---------- Guard Break (anti-regen) ----------
+# Снижает лечение от regen босса на 80% на короткое время.
+GUARD_BREAK_ID = "guard_break"
+GUARD_BREAK_CD = 18.0
+GUARD_BREAK_ENERGY_COST = 25
+GUARD_BREAK_DURATION = 5.0   # секунды (если надо — поменяешь)
+GUARD_BREAK_REGEN_MULT = 0.2 # 20% от обычного лечения (т.е. -80%)
+
+
+# ---------- Adrenaline (buff) ----------
+# Временно ускоряет базовую атаку (core_strike): уменьшает её CD.
+ADRENALINE_ID = "adrenaline"
+ADRENALINE_CD = 25.0
+ADRENALINE_DURATION = 6.0
+ADRENALINE_CORE_CD_MULT = 0.5  # -50% CD у core_strike
+ADRENALINE_ENERGY_COST = 35
+
 
 # ---------- Player XP / Level ----------
 PLAYER_XP_PER_BOSS_BASE = 20
@@ -86,20 +105,4 @@ CRIT_BY_RARITY = {
         "chance": 0.10,   # 25%
         "mult": 3.0,
     },
-}
-
-
-# ---------- Weapon modifiers (1 of 10): Bleeding Edge ----------
-WEAPON_MODIFIER_IDS = [
-    "bleeding_edge",
-    # дальше добавим остальные 9
-]
-
-# параметры bleed зависят от rarity оружия
-BLEEDING_EDGE_BY_RARITY = {
-    "common":    {"chance": 0.10, "dps_pct": 0.03, "duration": 4.0, "max_stacks": 1},
-    "uncommon":  {"chance": 0.12, "dps_pct": 0.04, "duration": 4.0, "max_stacks": 1},
-    "rare":      {"chance": 0.15, "dps_pct": 0.06, "duration": 5.0, "max_stacks": 2},
-    "epic":      {"chance": 0.18, "dps_pct": 0.08, "duration": 5.0, "max_stacks": 3},
-    "legendary": {"chance": 0.22, "dps_pct": 0.10, "duration": 6.0, "max_stacks": 4},
 }

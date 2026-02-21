@@ -18,13 +18,36 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
     <div class="bg__tile" id="bgA"></div>
     <div class="bg__tile" id="bgB"></div>
   </div>
+  <div id="playerPanel" class="player-panel">
   <div id="playerNameTxt" class="player-name">Player</div>
+  <div id="heroHud" class="hero-hud">
+  <div class="hero-hud__top">
+    <span id="heroHudLvl" class="hero-hud__lvl">LVL 1</span>
+  </div>
+
+  <div class="hero-hud__bar">
+    <div id="heroHpFill" class="hero-hud__fill hero-hud__fill--hp" style="width:100%"></div>
+    <span id="heroHpText" class="hero-hud__txt">100 / 100</span>
+  </div>
+
+  <div class="hero-hud__bar">
+    <div id="heroMpFill" class="hero-hud__fill hero-hud__fill--mp" style="width:100%"></div>
+    <span id="heroMpText" class="hero-hud__txt">50 / 50</span>
+  </div>
+
+  <div class="hero-hud__bar hero-hud__bar--exp">
+    <div id="heroExpFill" class="hero-hud__fill hero-hud__fill--exp" style="width:0%"></div>
+  </div>
+
+  <div id="heroXpText" class="hero-hud__xp">XP: 0 / 100</div>
+</div>
+
   <div id="bossLvlBadge" class="boss-lvl-badge">
   <span class="boss-lvl-badge__ico">Boss</span>
   <span class="boss-lvl-badge__txt">LVL</span>
   <span id="bossLvlValue" class="boss-lvl-badge__val">1</span>
 </div>
-
+</div>
 <div class="stats-top-right">
 <p id="coinsTxt">💰 0</p>
 
@@ -61,7 +84,7 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
 
   <button id="skillBtn2" class="skill-btn" type="button" title="Навык 2">⚡</button>
 
-  <button class="skill-btn skill-btn--empty" type="button" disabled>3</button>
+  <button id="skillBtn3" class="skill-btn" type="button" title="Антиреген">🛡️</button>
   <button class="skill-btn skill-btn--empty" type="button" disabled>4</button>
   <button class="skill-btn skill-btn--empty" type="button" disabled>5</button>
   <button class="skill-btn skill-btn--empty" type="button" disabled>6</button>

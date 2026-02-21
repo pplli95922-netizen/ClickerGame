@@ -53,16 +53,205 @@
     0 0 8px rgba(255, 255, 255, 0.3);
 }
 
-.player-name {
+.player-panel{
   position: absolute;
-  top: 8px;
+  top: 70px;
   left: 10px;
-  color: #fff;
-  font-size: 16px;
-  font-weight: bold;
-  text-shadow: 0 0 4px #000;
-  z-index: 5; /* чтобы был поверх фона и босса */
+  width: 240px;
+  z-index: 6;
+
+  padding: 10px 10px 8px;
+  border-radius: 16px;
+
+  /* темное стекло без синевы */
+  background:
+    radial-gradient(120% 140% at 20% 0%, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.00) 55%),
+    linear-gradient(180deg, rgba(18,18,22,0.86) 0%, rgba(8,8,10,0.70) 100%);
+
+  border: 1px solid rgba(255,255,255,0.18);
+
+  box-shadow:
+    0 14px 30px rgba(0,0,0,0.65),
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    inset 0 0 0 1px rgba(0,0,0,0.55);
+
+  backdrop-filter: blur(6px);
+
+  overflow: hidden; /* нужно для бликов */
 }
+
+/* мягкий верхний блик */
+.player-panel::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.00) 45%);
+  pointer-events: none;
+}
+
+/* живой "пробегающий" блик */
+@keyframes panelSheen{
+  0%   { transform: translateX(-140%) skewX(-18deg); opacity: 0; }
+  12%  { opacity: 0.18; }
+  30%  { opacity: 0.10; }
+  100% { transform: translateX(140%)  skewX(-18deg); opacity: 0; }
+}
+.player-panel::after{
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: -60%;
+  width: 60%;
+  height: 140%;
+  background: linear-gradient(90deg, rgba(255,255,255,0.00), rgba(255,255,255,0.16), rgba(255,255,255,0.00));
+  animation: panelSheen 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+
+.player-name{
+  position: static;
+  margin: 0 0 6px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  text-shadow: 0 0 4px rgba(0,0,0,.9);
+    padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+
+}
+
+
+.hero-hud{
+  position: static;
+  width: 100%;
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 0 4px rgba(0,0,0,.9);
+}
+
+
+.hero-hud__top{
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 6px;
+  font-size: 12px;
+  opacity: .95;
+}
+
+.hero-hud__bar{
+  position: relative;
+  height: 14px;
+  margin-bottom: 8px;
+
+  border-radius: 999px;
+  overflow: hidden;
+
+  background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(0,0,0,0.38) 100%);
+  border: 1px solid rgba(255,255,255,0.20);
+
+  box-shadow:
+    inset 0 1px 2px rgba(0,0,0,0.75),
+    inset 0 0 0 1px rgba(0,0,0,0.55),
+    0 4px 10px rgba(0,0,0,0.35);
+}
+
+/* верхний “стеклянный” блик */
+.hero-hud__bar::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.00) 60%);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* лёгкая статичная текстура (не анимация) */
+.hero-hud__bar::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255,255,255,0.06) 0px,
+    rgba(255,255,255,0.06) 6px,
+    rgba(255,255,255,0.00) 6px,
+    rgba(255,255,255,0.00) 12px
+  );
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.hero-hud__bar--exp{
+  height: 6px;
+  margin-bottom: 8px;
+}
+
+.hero-hud__fill{
+  height: 100%;
+  width: 100%;
+  transition: width 0.18s linear;
+
+  border-radius: inherit;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    inset 0 -1px 0 rgba(0,0,0,0.35);
+}
+
+/* дополнительный блик уже на заливке */
+.hero-hud__fill::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.00) 65%);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+
+@keyframes hudBarFlow{
+  0%{ background-position: 0% 0; }
+  100%{ background-position: 200% 0; }
+}
+
+
+.hero-hud__fill--hp{
+  background: linear-gradient(90deg, #7a0a0a 0%, #ff3b3b 100%);
+}
+
+.hero-hud__fill--mp{
+  background: linear-gradient(90deg, #2b0a7a 0%, #a24bff 100%);
+}
+
+
+.hero-hud__fill--exp{
+  background: linear-gradient(90deg, #6b4f00, #ffd700, #6b4f00);
+  background-size: 200% 100%;
+  animation: hudBarFlow 2.8s linear infinite;
+}
+
+
+.hero-hud__txt{
+  position: absolute;
+  right: 6px;
+  top: 0;
+  line-height: 12px;
+  font-size: 10px;
+  opacity: .95;
+}
+
+.hero-hud__xp{
+  font-size: 10px;
+  opacity: .9;
+}
+
 
 .boss-hp-wrapper{
   position: absolute;
@@ -156,18 +345,6 @@
 .res-item span[id]{
   color: #ffffff;
 }
-
-.player-name {
-  position: absolute;
-  top: 70px;
-  left: 10px;
-  color: #fff;
-  font-size: 16px;
-  font-weight: bold;
-  text-shadow: 0 0 4px #000;
-  z-index: 5; /* чтобы был поверх фона и босса */
-}
-
 /* ===== LOOT MODAL ===== */
 
 .loot-overlay {
@@ -233,7 +410,7 @@
 /* ===== Boss LVL badge (main screen) ===== */
 .boss-lvl-badge{
   position: absolute;
-  top: 90px;
+  top: 180px;
   left: 10px;
   z-index: 6;
 

@@ -29,16 +29,21 @@ from .constants import (
     HEAVY_BLOW_DMG_MAX,
     CRAFT_COINS_BASE,
     CRAFT_COINS_GROWTH,
-    WEAPON_MODIFIER_IDS,
-    BLEEDING_EDGE_BY_RARITY,
+    GUARD_BREAK_ID,
+    GUARD_BREAK_CD,
+    GUARD_BREAK_ENERGY_COST,
+    GUARD_BREAK_DURATION,
+    GUARD_BREAK_REGEN_MULT,
+    ADRENALINE_ID,
+    ADRENALINE_CD,
+    ADRENALINE_DURATION,
+    ADRENALINE_CORE_CD_MULT,
+    ADRENALINE_ENERGY_COST,
+    HEAVY_BLOW_ENERGY_COST,
 
 
 )
 from .upgrades import BOSSES, has_boss, get_boss_config
-
-
-def roll_weapon_attack() -> float:
-    return random.uniform(1, 1.25)
 
 
 def craft_coins_cost(forge_lvl: int) -> int:
@@ -49,13 +54,12 @@ def craft_coins_cost(forge_lvl: int) -> int:
 def get_craft_cost_preview(state: PlayerState) -> dict:
     forge_lvl = int(state.get("forge_lvl", 1))
 
-    # монеты
-    coins_base = 10
-    coins_cost = scale_cost(coins_base, forge_lvl)
+    # монеты — ровно как в handle_craft
+    coins_cost = craft_coins_cost(forge_lvl)
 
-    # ресурсы (твоя текущая логика)
+    # ресурсы — ровно как в handle_craft
     if forge_lvl >= 4:
-        resources_cost = {"wood": 2, "ore": 2}
+        resources_cost = {"wood": 3, "ore": 2}
     else:
         resources_cost = {"wood": 1}
 
@@ -102,12 +106,6 @@ def check_chance(probability_0_to_1: float) -> bool:
     return random.random() < probability_0_to_1
 
 
-
-def roll_weapon_modifier_id() -> str:
-    # сейчас у нас пока 1 мод, позже будет 10
-    return random.choice(WEAPON_MODIFIER_IDS)
-
-
 def apply_bleed_ticks(state: PlayerState, now: float) -> int:
     """
     Тикающий урон bleed раз в 1 секунду.
@@ -152,42 +150,6 @@ def apply_bleed_ticks(state: PlayerState, now: float) -> int:
     state["boss_bleed"]["last_tick_ts"] = last + ticks * 1.0
     return dealt
 
-
-def try_apply_bleeding_edge(state: PlayerState, now: float, atk_for_scaling: int) -> dict | None:
-    """
-    Если экипирован мод bleeding_edge — может повесить/обновить bleed.
-    Возвращает event для фронта или None.
-    """
-    eq = state.get("equipped_weapon") or {}
-    mod = (eq.get("modifier") or {})
-    if mod.get("id") != "bleeding_edge":
-        return None
-
-    rarity = str(eq.get("rarity", "common"))
-    cfg = BLEEDING_EDGE_BY_RARITY.get(rarity)
-    if not cfg:
-        return None
-
-    if not check_chance(float(cfg["chance"])):
-        return None
-
-    bleed = state.get("boss_bleed") or {"stacks": 0, "dps_per_stack": 0, "expires_at": 0.0, "last_tick_ts": 0.0}
-    stacks = int(bleed.get("stacks", 0) or 0)
-    max_stacks = int(cfg["max_stacks"])
-    stacks = min(max_stacks, stacks + 1)
-
-    dps_per_stack = int(int(atk_for_scaling) * float(cfg["dps_pct"]))
-    if dps_per_stack < 1:
-        dps_per_stack = 1
-
-    state["boss_bleed"] = {
-        "stacks": stacks,
-        "dps_per_stack": dps_per_stack,
-        "expires_at": now + float(cfg["duration"]),
-        "last_tick_ts": float(bleed.get("last_tick_ts", 0.0) or now),
-    }
-
-    return {"applied": True, "stacks": stacks, "dps_per_stack": dps_per_stack, "duration": float(cfg["duration"])}
 
 
 def scale_cost(base: int, forge_lvl: int) -> int:
@@ -266,7 +228,7 @@ def handle_craft(state: PlayerState, recipe_id: str) -> dict:
 
     # ресурсы: с 4 lvl кузницы — 2 типа ресурсов (фиксированные количества)
     if forge_lvl >= 4:
-        resources_cost = {"wood": 2, "ore": 2}
+        resources_cost = {"wood": 3, "ore": 2}
     else:
         resources_cost = {"wood": 1}
 
@@ -443,7 +405,7 @@ def craft_success_add_weapon(
         state["inventory"] = []
 
     # 2) генерируем roll атаки (разброс)
-    roll = random.uniform(0.75, 1.25)
+    roll = random.uniform(0.9, 1.1)
 
     # 3) делаем простой уникальный id (хватит для тестов)
     weapon_id = f"w{random.randint(100000, 999999)}"
@@ -459,10 +421,6 @@ def craft_success_add_weapon(
 
         "crit_chance": float(crit_data["chance"]) if crit_data else 0.0,
         "crit_mult": float(crit_data["mult"]) if crit_data else 1.0,
-
-        "modifier": {
-            "id": roll_weapon_modifier_id(),
-        },
 
         "cost": {
             "coins": int(cost_coins),
@@ -622,6 +580,11 @@ def apply_boss_regen(state: PlayerState, now: float) -> int:
         return 0
 
     heal = int(max_hp * regen_pct)
+    # --- Guard Break: режем лечение от регена на 80% ---
+    gb = state.get("boss_guard_break") or {}
+    gb_until = float(gb.get("expires_at", 0.0) or 0.0)
+    if now < gb_until:
+        heal = int(heal * float(GUARD_BREAK_REGEN_MULT))
     if heal <= 0:
         state["boss_last_regen_ts"] = now
         return 0
@@ -662,7 +625,8 @@ def use_core_strike(state: PlayerState) -> dict:
     eq = state.get("equipped_weapon") or {}
     crit_chance = float(eq.get("crit_chance", 0.0))
     crit_mult = float(eq.get("crit_mult", 1.0))
-
+    exec_event = None
+    
     is_crit = False
     if crit_chance > 0 and random.random() < crit_chance:
         damage = int(damage * crit_mult)
@@ -681,8 +645,8 @@ def use_core_strike(state: PlayerState) -> dict:
             damage_done = 0
         else:
             damage_done = damage
+
             state["boss_hp"] = max(0, int(state["boss_hp"]) - damage_done)
-            bleed_apply = try_apply_bleeding_edge(state, now, int(state.get("attack", 1)))
     
     
     # --- смерть босса: сразу выдаём награду и респавним босса ---
@@ -728,7 +692,11 @@ def use_core_strike(state: PlayerState) -> dict:
         state["boss_dead"] = False
 
     # обновляем тайминги
-    cds[CORE_STRIKE_ID] = now + CORE_STRIKE_CD
+    core_cd = float(CORE_STRIKE_CD)
+    adr_until = float(state.get("adrenaline_until", 0.0) or 0.0)
+    if now < adr_until:
+        core_cd = core_cd * float(ADRENALINE_CORE_CD_MULT)
+    cds[CORE_STRIKE_ID] = now + core_cd
 
     return {
     "ok": True,
@@ -736,9 +704,6 @@ def use_core_strike(state: PlayerState) -> dict:
     "damage": int(damage_done),
     "crit": is_crit,
     "dodged": dodged,
-
-    "bleed_damage": int(bleed_damage),
-
     "boss_hp": int(state.get("boss_hp", 0)),
     "boss_max_hp": int(state.get("boss_max_hp", 0)),
     "boss_regen": int(regen_heal),
@@ -784,6 +749,10 @@ def _handle_boss_death_autoloot(state: PlayerState, boss_lvl: int, cfg: dict) ->
         state["boss_bleed"]["expires_at"] = 0.0
         state["boss_bleed"]["last_tick_ts"] = 0.0
 
+    # сброс Guard Break
+    if "boss_guard_break" in state and isinstance(state["boss_guard_break"], dict):
+        state["boss_guard_break"]["expires_at"] = 0.0
+
     return {
         "killed": True,
         "reward": {"coins": reward_coins, "resources": reward_res},
@@ -796,35 +765,69 @@ def server_tick(state: PlayerState) -> dict:
     """
     Серверный тик (фронт вызывает раз в ~1 сек).
     Считает regen и bleed по времени.
-    Возвращает event с bleed_damage.
+    Возвращает event, где есть явный флаг смерти, если bleed добил босса.
     """
     now = time.time()
 
-    # если вдруг включишь сундук — при boss_dead тут можно просто ничего не делать
+    # --- реген энергии ---
+    energy = float(state.get("player_energy", 0))
+    energy_max = float(state.get("player_energy_max", 0))
+    regen = float(state.get("player_energy_regen", 0))
+
+    energy += regen
+    if energy > energy_max:
+        energy = energy_max
+
+    state["player_energy"] = int(energy)
+
     if state.get("boss_dead", False):
-        return {"ok": True, "bleed_damage": 0, "boss_regen": 0}
+        return {"ok": True, "bleed_damage": 0, "player_energy": int(state.get("player_energy", 0)), "player_energy_max": int(state.get("player_energy_max", 0)),"boss_regen": 0}
+
+    # важно: запомним HP до тика, чтобы фронт мог понять, что босс реально умер
+    hp_before = int(state.get("boss_hp", 0))
 
     boss_regen = apply_boss_regen(state, now)
     bleed_damage = apply_bleed_ticks(state, now)
 
+    # hp после bleed/regen, но ДО возможного респавна
+    hp_after_damage = int(state.get("boss_hp", 0))
+
     death_event = None
-    # если bleed добил босса — награду выдаём тут
-    if state.get("boss_hp", 0) <= 0 and not state.get("boss_dead", False):
+    died = False
+
+    # если bleed добил босса — выдаём награду (как и в ударах)
+    if hp_after_damage <= 0 and not state.get("boss_dead", False):
+        died = True
         state["boss_dead"] = True
+
         boss_lvl = int(state.get("boss_lvl", 1))
         cfg = get_boss_config(boss_lvl) or {}
+
+        # ВАЖНО: эта функция у тебя респавнит босса (делает HP снова max)
         death_event = _handle_boss_death_autoloot(state, boss_lvl, cfg)
+
         state["boss_dead"] = False
 
     return {
         "ok": True,
         "bleed_damage": int(bleed_damage),
         "boss_regen": int(boss_regen),
+
+        "player_energy": int(state.get("player_energy", 0)),
+        "player_energy_max": int(state.get("player_energy_max", 0)),
+
+        # для фронта: что было ДО и ПОСЛЕ урона (до респавна)
+        "boss_hp_before": int(hp_before),
+        "boss_hp_after_damage": int(hp_after_damage),
+
+        # текущие значения state (после возможного респавна)
         "boss_hp": int(state.get("boss_hp", 0)),
         "boss_max_hp": int(state.get("boss_max_hp", 0)),
+
+        # главное: явный флаг смерти + детали награды/XP
+        "boss_died": bool(died),
         "death": death_event,
     }
-
 
 # Уровень босса
 def set_boss(state: PlayerState, boss_lvl: int) -> dict:
@@ -920,6 +923,13 @@ def use_heavy_blow(state: PlayerState) -> dict:
     if state.get("boss_dead", False):
         return {"ok": False, "reason": "boss_dead"}
 
+    # --- energy ---
+    energy = int(state.get("player_energy", 0) or 0)
+    if energy < int(HEAVY_BLOW_ENERGY_COST):
+        return {"ok": False, "reason": "no_energy", "need": int(HEAVY_BLOW_ENERGY_COST), "have": energy}
+
+    state["player_energy"] = energy - int(HEAVY_BLOW_ENERGY_COST)
+
     boss_lvl = int(state.get("boss_lvl", 1))
     cfg = get_boss_config(boss_lvl) or {}
 
@@ -933,6 +943,7 @@ def use_heavy_blow(state: PlayerState) -> dict:
             "skill": "heavy_blow",
             "damage": 0,
             "dodged": True,
+            "player_energy": int(state.get("player_energy", 0)),
             "boss_hp": int(state.get("boss_hp", 0)),
         }
 
@@ -943,7 +954,6 @@ def use_heavy_blow(state: PlayerState) -> dict:
 
     # --- применяем урон ---
     state["boss_hp"] = max(0, int(state.get("boss_hp", 0)) - damage)
-    bleed_apply = try_apply_bleeding_edge(state, now, int(state.get("attack", 1)))
 
 
     # --- смерть босса: сразу выдаём награду и респавним босса ---
@@ -996,8 +1006,84 @@ def use_heavy_blow(state: PlayerState) -> dict:
         "ok": True,
         "skill": "heavy_blow",
         "damage": damage,
-        "bleed_damage": int(bleed_damage),
+        "player_energy": int(state.get("player_energy", 0)),
         "dodged": False,
         "boss_hp": int(state.get("boss_hp", 0)),
         "boss_max_hp": int(state.get("boss_max_hp", 0)),
+    }
+
+
+def use_guard_break(state: PlayerState) -> dict:
+    """
+    Guard Break (anti-regen)
+    - Стоимость: 20 энергии
+    - CD: 18с
+    - Эффект: режет лечение от регена босса на 80% на GUARD_BREAK_DURATION
+    """
+    now = time.time()
+
+    # --- энергия ---
+    if int(state.get("player_energy", 0)) < int(GUARD_BREAK_ENERGY_COST):
+        return {"ok": False, "reason": "no_energy"}
+
+    # --- CD ---
+    cd_until = float(state.get("skill_cd_until", {}).get(GUARD_BREAK_ID, 0))
+    if now < cd_until:
+        return {"ok": False, "reason": "cooldown", "remain": round(cd_until - now, 2)}
+
+    # --- если босс мёртв ---
+    if state.get("boss_dead", False):
+        return {"ok": False, "reason": "boss_dead"}
+
+    # списать энергию
+    state["player_energy"] -= int(GUARD_BREAK_ENERGY_COST)
+
+    # применить эффект
+    gb = state.setdefault("boss_guard_break", {"expires_at": 0.0})
+    gb["expires_at"] = float(now + float(GUARD_BREAK_DURATION))
+
+    # поставить КД
+    state.setdefault("skill_cd_until", {})[GUARD_BREAK_ID] = float(now + float(GUARD_BREAK_CD))
+
+    return {
+        "ok": True,
+        "skill": GUARD_BREAK_ID,
+        "player_energy": int(state.get("player_energy", 0)),
+        "boss_hp": int(state.get("boss_hp", 0)),
+        "effect": {
+            "name": "guard_break",
+            "regen_mult": float(GUARD_BREAK_REGEN_MULT),
+            "duration": float(GUARD_BREAK_DURATION),
+        },
+        "cd": float(GUARD_BREAK_CD),
+    }
+
+
+def use_adrenaline(state: PlayerState) -> dict:
+    now = time.time()
+
+    if state.get("boss_dead", False):
+        return {"ok": False, "reason": "boss_dead"}
+
+    cds = state.setdefault("skill_cd_until", {})
+    cd_until = float(cds.get(ADRENALINE_ID, 0.0) or 0.0)
+    if now < cd_until:
+        return {"ok": False, "reason": "cooldown", "remain": round(cd_until - now, 2)}
+
+    energy = int(state.get("player_energy", 0) or 0)
+    if energy < int(ADRENALINE_ENERGY_COST):
+        return {"ok": False, "reason": "no_energy", "need": int(ADRENALINE_ENERGY_COST), "have": energy}
+
+    state["player_energy"] = energy - int(ADRENALINE_ENERGY_COST)
+
+    state["adrenaline_until"] = now + float(ADRENALINE_DURATION)
+
+    cds[ADRENALINE_ID] = now + float(ADRENALINE_CD)
+
+    return {
+        "ok": True,
+        "skill": ADRENALINE_ID,
+        "duration": float(ADRENALINE_DURATION),
+        "until": float(state["adrenaline_until"]),
+        "player_energy": int(state["player_energy"]),
     }

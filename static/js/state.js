@@ -33,6 +33,15 @@ console.log("USER_ID from URL/Telegram =", USER_ID, "name =", playerName)
 
 let coins = 0;
 let attack = 0;
+let player_lvl = 1;
+let player_xp = 0;
+let player_xp_need = 100;
+
+let hp = 100;
+let hp_max = 100;
+
+let mana = 50;
+let mana_max = 50;
 let boss_dead = false;
 let boss_hp = 0;
 let boss_max_hp = 0;
@@ -121,6 +130,25 @@ function applyState(st) {
 
   if (st.coins !== undefined) coins = Number(st.coins) || 0;
   if (st.attack !== undefined) attack = Number(st.attack) || 0;
+
+  // ===== HERO STATS FROM BACKEND =====
+if (st.player_lvl !== undefined) player_lvl = Math.max(1, Number(st.player_lvl) || 1);
+if (st.player_xp !== undefined) player_xp = Math.max(0, Number(st.player_xp) || 0);
+
+// xp_need может прийти как player_xp_need (если добавите позже) — поддержим сразу
+if (st.player_xp_need !== undefined) player_xp_need = Math.max(1, Number(st.player_xp_need) || 1);
+
+// HP
+if (st.hp_max !== undefined) hp_max = Math.max(1, Number(st.hp_max) || 1);
+if (st.hp !== undefined) hp = Math.max(0, Number(st.hp) || 0);
+
+// MANA (бек присылает player_energy / player_energy_max)
+if (st.player_energy_max !== undefined) mana_max = Math.max(1, Number(st.player_energy_max) || 1);
+if (st.player_energy !== undefined) mana = Math.max(0, Number(st.player_energy) || 0);
+
+// чтобы ui.js всегда видел актуальные значения
+window.mana = mana;
+window.mana_max = mana_max;
 
   const hpRaw =
   st.boss_hp ?? st.mob_hp ?? st.enemy_hp ?? st.current_hp;
@@ -330,6 +358,13 @@ function buildState() {
 
     // бой/босс
     attack: attack,
+    player_lvl: player_lvl,
+player_xp: player_xp,
+player_xp_need: player_xp_need,
+hp: hp,
+hp_max: hp_max,
+mana: mana,
+mana_max: mana_max,
     boss_lvl: boss_lvl,
 
 // ✅ то, что реально есть у бэка
@@ -358,7 +393,9 @@ boss_lvl_max_reached: boss_lvl_max_reached,
     // инвентарь/экип (если сервер это хранит)
     inventory: inventory,
     equipped_weapon_id: equipped_weapon_id,
-    skill_cd: (typeof window.skill_cd === "number" ? window.skill_cd : skill_cd)
+    skill_cd: (typeof window.skill_cd === "number" ? window.skill_cd : skill_cd),
+skill2_cd: (typeof window.skill2_cd === "number" ? window.skill2_cd : undefined),
+skill3_cd: (typeof window.skill3_cd === "number" ? window.skill3_cd : undefined)
 
 
   };
@@ -736,32 +773,33 @@ if (st && ev && typeof ev === "object") {
 }
 
     
-    // ===== FIX: отдельный КД для каждого навыка =====
+// ===== FIX: отдельный КД для каждого навыка =====
 const usedId = String(skill_id || "core_strike");
 
 if (st) {
-  // cd может прийти в event, а не в state
   const evCd =
     data?.event?.skill_cd ?? data?.event?.cooldown ?? data?.event?.cd;
 
-  // берём cd из state/event
-  const cdFromState = (st.skill2_cd ?? st.skill_cd);
+  // берём cd из state/event (тут учитываем и skill3_cd тоже)
+  const cdFromState = (st.skill3_cd ?? st.skill2_cd ?? st.skill_cd);
   const cd = (cdFromState !== undefined) ? cdFromState : evCd;
 
-  // кладём cd в правильное поле
   if (cd !== undefined) {
     if (usedId === "heavy_blow") st.skill2_cd = cd;
+    else if (usedId === "guard_break") st.skill3_cd = cd;
     else st.skill_cd = cd;
   }
 
   // дефолты, если сервер не прислал
   if (usedId === "core_strike" && st.skill_cd === undefined) st.skill_cd = 1.3;
   if (usedId === "heavy_blow"  && st.skill2_cd === undefined) st.skill2_cd = 20;
+  if (usedId === "guard_break" && st.skill3_cd === undefined) st.skill3_cd = 18;
 
-  // КРИТИЧНО: второй навык не должен трогать КД первого
+  // второй навык не должен трогать КД первого
   if (usedId === "heavy_blow") delete st.skill_cd;
+  // третий навык тоже не должен трогать КД первого
+  if (usedId === "guard_break") delete st.skill_cd;
 }
-
 
 
 

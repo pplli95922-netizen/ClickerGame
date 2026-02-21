@@ -79,6 +79,13 @@ const lootModal = document.getElementById("lootModal");
 const lootText  = document.getElementById("lootText");
 const collectBtn = document.getElementById("collectBtn");
 const woodTxt = document.getElementById("woodTxt");
+const heroHudLvl = document.getElementById("heroHudLvl");
+const heroHpFill = document.getElementById("heroHpFill");
+const heroHpText = document.getElementById("heroHpText");
+const heroMpFill = document.getElementById("heroMpFill");
+const heroMpText = document.getElementById("heroMpText");
+const heroExpFill = document.getElementById("heroExpFill");
+const heroXpText = document.getElementById("heroXpText");
 const itemModal = document.getElementById("itemModal");
 const itemModalBackdrop = document.getElementById("itemModalBackdrop");
 const itemModalClose = document.getElementById("itemModalClose");
@@ -122,6 +129,7 @@ const bossImg = document.getElementById("bossImg");
 const forgeEffect = document.getElementById("forgeEffect");
 const skillBtn = document.getElementById("skillBtn");
 const skillBtn2 = document.getElementById("skillBtn2");
+const skillBtn3 = document.getElementById("skillBtn3");
 const nextWaveBtn = document.getElementById("nextWaveBtn");
 const sceneEl = document.getElementById("scene");
 const bgA = document.getElementById("bgA");
@@ -429,6 +437,23 @@ if (skillBtn2) {
   });
 }
 
+if (skillBtn3) {
+  skillBtn3.addEventListener("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (skill3CdLeft > 0 || skillBtn3.disabled) {
+      if (typeof showErrorToast === "function") showErrorToast("Навык в КД");
+      return;
+    }
+
+    const ok = (typeof window.trySkill3Attack === "function") ? window.trySkill3Attack() : false;
+
+    // fallback КД (если бэк не пришлёт отдельный)
+    if (ok) startSkill3CooldownUI(18000);
+  });
+}
+
 skillBtn.addEventListener("click", function (e) {
   e.preventDefault();
   e.stopPropagation();
@@ -731,6 +756,66 @@ function startSkill2CooldownUI(ms){
   tick();
 }
 
+let skill3CdLeft = 0;
+let skill3CdUntil = 0;
+let skill3CdTotalMs = 0;
+let skill3CdRAF = null;
+
+function stopSkill3CooldownUI(){
+  if (skill3CdRAF) cancelAnimationFrame(skill3CdRAF);
+  skill3CdRAF = null;
+
+  skill3CdUntil = 0;
+  skill3CdTotalMs = 0;
+  skill3CdLeft = 0;
+  window.skill3_cd = 0;
+
+  if (skillBtn3){
+    skillBtn3.disabled = false;
+    skillBtn3.textContent = "🛡️";
+    skillBtn3.classList.remove("cooldown");
+    skillBtn3.style.removeProperty("--cdp");
+  }
+}
+
+function startSkill3CooldownUI(ms){
+  const dur = Math.max(0, Number(ms) || 0);
+  if (dur <= 0) return stopSkill3CooldownUI();
+
+  if (skill3CdRAF) cancelAnimationFrame(skill3CdRAF);
+  skill3CdRAF = null;
+
+  skill3CdTotalMs = dur;
+  skill3CdUntil = performance.now() + dur;
+
+  const tick = () => {
+    const now = performance.now();
+    const leftMs = Math.max(0, skill3CdUntil - now);
+    const leftSec = leftMs / 1000;
+
+    skill3CdLeft = leftSec;
+    window.skill3_cd = leftSec;
+
+    if (skillBtn3){
+      if (leftMs > 0){
+        skillBtn3.disabled = true;
+        skillBtn3.classList.add("cooldown");
+
+        const pct = Math.max(0, Math.min(100, (leftMs / skill3CdTotalMs) * 100));
+        skillBtn3.style.setProperty("--cdp", pct.toFixed(2) + "%");
+
+        skillBtn3.textContent = "⏳" + leftSec.toFixed(1);
+      } else {
+        stopSkill3CooldownUI();
+        return;
+      }
+    }
+
+    skill3CdRAF = requestAnimationFrame(tick);
+  };
+
+  tick();
+}
 
 function syncUI(st){
     // ===== cooldown навыка =====
@@ -756,6 +841,21 @@ if (skillBtn2) {
   const raw =
     (st && (st.skill2_cd ?? st.skill2_cd_left ?? st.skill2Cooldown ?? st.skill2_cooldown));
 
+    if (skillBtn3) {
+  const raw =
+    (st && (st.skill3_cd ?? st.skill3_cd_left ?? st.skill3Cooldown ?? st.skill3_cooldown));
+
+  if (raw !== undefined) {
+    const v = Math.max(0, Number(raw) || 0);
+    const ms = (v > 1000) ? v : (v * 1000);
+    startSkill3CooldownUI(ms);
+  } else {
+    if (!skill3CdRAF && (typeof window.skill3_cd === "number") && window.skill3_cd > 0) {
+      startSkill3CooldownUI(window.skill3_cd * 1000);
+    }
+  }
+}
+
   if (raw !== undefined) {
     const v = Math.max(0, Number(raw) || 0);
     const ms = (v > 1000) ? v : (v * 1000);
@@ -775,6 +875,26 @@ if (skillBtn2) {
   if (coinsTxt) coinsTxt.textContent = "💰 " + (coins ?? 0);
   if (woodTxt) woodTxt.textContent = (resources && resources.wood) ? resources.wood : 0;
   if (oreTxt) oreTxt.textContent = (resources && resources.ore !== undefined) ? resources.ore : 0;
+  // ===== HERO HUD RENDER =====
+if (heroHudLvl) heroHudLvl.textContent = `LVL ${Math.max(1, Number(window.player_lvl ?? player_lvl) || 1)}`;
+
+const _hpMax = Math.max(1, Number(window.hp_max ?? hp_max) || 1);
+const _hp = Math.max(0, Number(window.hp ?? hp) || 0);
+const _hpPct = Math.max(0, Math.min(100, (_hp / _hpMax) * 100));
+if (heroHpFill) heroHpFill.style.width = _hpPct + "%";
+if (heroHpText) heroHpText.textContent = `${Math.round(_hp)} / ${Math.round(_hpMax)}`;
+
+const _mpMax = Math.max(1, Number(window.mana_max ?? mana_max) || 1);
+const _mp = Math.max(0, Number(window.mana ?? mana) || 0);
+const _mpPct = Math.max(0, Math.min(100, (_mp / _mpMax) * 100));
+if (heroMpFill) heroMpFill.style.width = _mpPct + "%";
+if (heroMpText) heroMpText.textContent = `${Math.round(_mp)} / ${Math.round(_mpMax)}`;
+
+const _xpNeed = Math.max(1, Number(window.player_xp_need ?? player_xp_need) || 1);
+const _xp = Math.max(0, Number(window.player_xp ?? player_xp) || 0);
+const _xpPct = Math.max(0, Math.min(100, (_xp / _xpNeed) * 100));
+if (heroExpFill) heroExpFill.style.width = _xpPct + "%";
+if (heroXpText) heroXpText.textContent = `XP: ${Math.round(_xp)} / ${Math.round(_xpNeed)}`;
 
   refreshNextBtn();
 }

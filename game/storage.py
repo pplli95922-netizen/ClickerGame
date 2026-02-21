@@ -54,6 +54,19 @@ def _apply_backfill_and_derived(state: PlayerState) -> PlayerState:
     if "trophy_attack_bonus" not in state:
         state["trophy_attack_bonus"] = 0
 
+    if "player_energy" not in state:
+        state["player_energy"] = 100
+
+    if "player_energy_max" not in state:
+        state["player_energy_max"] = 100
+
+    if "player_energy_regen" not in state:
+        state["player_energy_regen"] = 5
+    
+        # adrenaline buff backfill
+    if "adrenaline_until" not in state:
+        state["adrenaline_until"] = 0.0
+
     # derived поля
     state["forge_xp_need"] = int(forge_xp_needed(state.get("forge_lvl", 1)))
     state["craft_cost_preview"] = get_craft_cost_preview(state)

@@ -70,7 +70,7 @@ GUARD_BREAK_REGEN_MULT = 0.2 # 20% от обычного лечения (т.е. 
 # Временно ускоряет базовую атаку (core_strike): уменьшает её CD.
 ADRENALINE_ID = "adrenaline"
 ADRENALINE_CD = 25.0
-ADRENALINE_DURATION = 6.0
+ADRENALINE_DURATION = 12.0
 ADRENALINE_CORE_CD_MULT = 0.5  # -50% CD у core_strike
 ADRENALINE_ENERGY_COST = 35
 

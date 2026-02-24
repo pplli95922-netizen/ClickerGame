@@ -482,22 +482,24 @@ if (skillBtn4) {
 }
 
 skillBtn.addEventListener("click", function (e) {
-  e.preventDefault();
-  e.stopPropagation();
-  // если КД идёт — не запускаем анимацию и не шлём запрос
   if (skillCdLeft > 0 || skillBtn.disabled) {
-      // 🚫 если скелет ещё не дошёл — навык не даём
-  if (typeof window.canUseSkillNow === "function" && !window.canUseSkillNow()) {
-    if (typeof showErrorToast === "function") showErrorToast("Скелет далеко");
     return;
   }
-    if (typeof showErrorToast === "function") showErrorToast("Навык в КД");
+
+  if (typeof window.canUseSkillNow === "function" && !window.canUseSkillNow()) {
     return;
   }
 
   if (typeof window.trySkillAttack === "function") {
-    window.trySkillAttack();
+  const ok = window.trySkillAttack();
+
+  if (ok) {
+    const nowS = Date.now() / 1000;
+    const adrUntil = Number(window.adrenaline_until || 0);
+    const cdMs = (Number.isFinite(adrUntil) && adrUntil > nowS) ? 600 : 1200; // 50% от 1.2s
+    startSkillCooldownUI(cdMs);
   }
+}
 });
 
 
@@ -912,10 +914,15 @@ if (skillBtn) {
   const raw =
     (st && (st.skill_cd ?? st.skill_cd_left ?? st.skillCooldown ?? st.skill_cooldown));
 
-  // стартуем по серверу, если сервер прислал
-  if (raw !== undefined) {
+    if (raw !== undefined) {
     const v = Math.max(0, Number(raw) || 0);
-    const ms = (v > 1000) ? v : (v * 1000); // если вдруг пришли ms
+
+    // НЕ сбрасываем локальный КД, если сервер прислал 0, пока локальный таймер уже тикает
+    if (v === 0 && skillCdRAF) {
+      return;
+    }
+
+    const ms = (v > 1000) ? v : (v * 1000);
     startSkillCooldownUI(ms);
   } else {
     // если сервер НЕ прислал, но локально уже идёт КД — не перезапускаем

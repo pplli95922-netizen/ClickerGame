@@ -12,12 +12,12 @@ body{
   height: 932px;
   position: fixed;
   left: 50%;
-  top: 50%;
+  top: 0;
   overflow: hidden;
   background:#000;
 
-  transform: translate(-50%, -50%) scale(var(--ui-scale, 1));
-  transform-origin: center;
+  transform: translateX(-50%) scale(var(--ui-scale, 1));
+  transform-origin: top center;
   will-change: transform;
 }
 

@@ -2,8 +2,8 @@ body{
   margin:0;
   overflow:hidden;
 
-  height: var(--app-svh, 100vh);
-  min-height: var(--app-svh, 100vh);
+  height: var(--app-svh, 100dvh);
+  min-height: var(--app-svh, 100dvh);
 
   background: url("/static/images/dungeon-bg2.jpg") center / cover no-repeat;
 }

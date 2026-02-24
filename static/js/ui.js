@@ -21,8 +21,6 @@ if (tg) {
   tg.setBackgroundColor?.("#000000");
   tg.setHeaderColor?.("#000000");
 
-  // fullscreen сработает только после жеста
-  document.addEventListener("pointerdown", () => tg.requestFullscreen?.(), { once: true });
 }
 
 
@@ -31,13 +29,7 @@ const DESIGN_W = 430;
 const DESIGN_H = 932;
 
 let __uiScaleMax = 0;
-let __uiScaleLocked = true;
-
-// до первого касания НЕ даём Telegram уменьшать масштаб
-document.addEventListener("pointerdown", () => {
-  __uiScaleLocked = false;
-  applyUiScale();
-}, { once: true });
+let __uiScaleLocked = false;
 
 function applyUiScale(){
   const tg = window.Telegram?.WebApp;

@@ -38,8 +38,8 @@ html, body {
   justify-content: center;
   padding-bottom: 0;
 
-  background: rgb(16, 21, 26) url("/static/images/ui/loading-bg.png") center center / cover no-repeat;
-
+  background: rgb(16, 21, 26) url("/static/images/ui/loading-bg.png") center center / 100% 100% no-repeat;
+  
   image-rendering: pixelated;
 }
 

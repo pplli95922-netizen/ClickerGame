@@ -34,16 +34,22 @@ function applyUiScale(){
   const tg = window.Telegram?.WebApp;
   const vv = window.visualViewport;
 
-  const vw =
-    tg?.viewportWidth ??
-    (vv ? vv.width : window.innerWidth);
+    const doc = document.documentElement;
 
-  const vh =
-    Math.max(
-      tg?.viewportHeight ?? 0,
-      tg?.viewportStableHeight ?? 0,
-      (vv ? vv.height : window.innerHeight)
-    );
+  const vw = Math.max(
+    tg?.viewportWidth ?? 0,
+    (vv ? vv.width : 0),
+    doc.clientWidth,
+    window.innerWidth
+  );
+
+  const vh = Math.max(
+    tg?.viewportStableHeight ?? 0,
+    tg?.viewportHeight ?? 0,
+    (vv ? vv.height : 0),
+    doc.clientHeight,
+    window.innerHeight
+  );
 
   // ✅ ВАЖНО: убрали "1", теперь может увеличиваться
   const scale = Math.min(vw / DESIGN_W, vh / DESIGN_H);
@@ -64,6 +70,12 @@ function warmupUiScale(){
 
 // запуск + обновление при ресайзе/повороте/адресной строке Chrome
 warmupUiScale();
+
+window.addEventListener("load", applyUiScale, { once: true });
+window.addEventListener("pageshow", applyUiScale);
+setTimeout(applyUiScale, 500);
+setTimeout(applyUiScale, 1500);
+
 window.addEventListener("resize", applyUiScale);
 window.addEventListener("orientationchange", applyUiScale);
 if (window.visualViewport) window.visualViewport.addEventListener("resize", applyUiScale);

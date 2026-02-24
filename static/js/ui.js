@@ -30,6 +30,15 @@ if (tg) {
 const DESIGN_W = 430;
 const DESIGN_H = 932;
 
+let __uiScaleMax = 0;
+let __uiScaleLocked = true;
+
+// до первого касания НЕ даём Telegram уменьшать масштаб
+document.addEventListener("pointerdown", () => {
+  __uiScaleLocked = false;
+  applyUiScale();
+}, { once: true });
+
 function applyUiScale(){
   const tg = window.Telegram?.WebApp;
   const vv = window.visualViewport;
@@ -51,10 +60,13 @@ function applyUiScale(){
     window.innerHeight
   );
 
-  // ✅ ВАЖНО: убрали "1", теперь может увеличиваться
-  const scale = Math.min(vw / DESIGN_W, vh / DESIGN_H);
+  const rawScale = Math.min(vw / DESIGN_W, vh / DESIGN_H);
 
-  document.documentElement.style.setProperty("--ui-scale", String(scale));
+// на старте держим максимум, чтобы Telegram не "отдалял" после первого viewportChanged
+const scale = __uiScaleLocked ? Math.max(__uiScaleMax, rawScale) : rawScale;
+if (__uiScaleLocked) __uiScaleMax = scale;
+
+document.documentElement.style.setProperty("--ui-scale", String(scale));
 }
 
 function warmupUiScale(){
@@ -79,7 +91,10 @@ setTimeout(applyUiScale, 1500);
 window.addEventListener("resize", applyUiScale);
 window.addEventListener("orientationchange", applyUiScale);
 if (window.visualViewport) window.visualViewport.addEventListener("resize", applyUiScale);
-window.Telegram?.WebApp?.onEvent?.("viewportChanged", applyUiScale);
+window.Telegram?.WebApp?.onEvent?.("viewportChanged", () => {
+  window.Telegram?.WebApp?.expand?.();
+  applyUiScale();
+});
 window.Telegram?.WebApp?.onEvent?.("fullscreenChanged", applyUiScale);
 
 const bossHpFill = document.getElementById("bossHpFill");

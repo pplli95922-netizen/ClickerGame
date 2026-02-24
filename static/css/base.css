@@ -25,3 +25,64 @@ html, body {
 .rarity-rare      { border-color: rgba(110,170,255,0.85); box-shadow: 0 0 18px rgba(110,170,255,0.25); }
 .rarity-epic      { border-color: rgba(190,120,255,0.9);  box-shadow: 0 0 18px rgba(190,120,255,0.28); }
 .rarity-legendary { border-color: rgba(255,205,90,0.95);  box-shadow: 0 0 22px rgba(255,205,90,0.32); }
+
+/* =====================
+   FULLSCREEN LOADING SCREEN
+   ===================== */
+.loading-screen{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: radial-gradient(circle at 50% 40%, rgba(40,50,60,0.95), rgba(10,12,14,0.98));
+}
+
+.loading-card{
+  width: min(520px, 92vw);
+  padding: 18px 18px 16px;
+  border-radius: 18px;
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,190,90,0.28);
+  box-shadow: 0 16px 44px rgba(0,0,0,0.65);
+  text-align: center;
+}
+
+.loading-title{
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: rgba(255,255,255,0.95);
+  margin-bottom: 10px;
+}
+
+.loading-text{
+  font-weight: 800;
+  color: rgba(255,255,255,0.88);
+  margin-bottom: 10px;
+}
+
+.loading-bar{
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.10);
+  overflow: hidden;
+  border: 1px solid rgba(255,190,90,0.20);
+}
+
+.loading-bar__fill{
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(255,106,0,0.95), rgba(255,205,90,0.95));
+  transition: width 120ms linear;
+}
+
+.loading-sub{
+  margin-top: 10px;
+  font-weight: 700;
+  font-size: 12px;
+  opacity: 0.75;
+  color: rgba(255,255,255,0.85);
+}

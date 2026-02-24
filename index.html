@@ -12,6 +12,20 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
 </head>
 <body>
 
+  <!-- FULLSCREEN LOADER (показывается до загрузки критичных ассетов + initGame) -->
+<div id="loadingScreen" class="loading-screen">
+  <div class="loading-card">
+    <div class="loading-title">TG Forge Boss Clicker</div>
+    <div id="loadingText" class="loading-text">Загрузка… 0%</div>
+
+    <div class="loading-bar">
+      <div id="loadingBarFill" class="loading-bar__fill" style="width:0%"></div>
+    </div>
+
+    <div class="loading-sub">Подгружаем навыки и спрайты…</div>
+  </div>
+</div>
+
 <div class="game-wrapper">
   <!-- MOVING BACKGROUND -->
   <div id="bg" class="bg">
@@ -268,13 +282,20 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
 <script src="/static/js/ui.js?v=3"></script>
 <script src="/static/js/fx.js?v=1"></script>
 <script src="/static/js/battle.js?v=2"></script>
-
+<script src="/static/js/loader.js?v=1"></script>
 
 <script>
-  window.addEventListener("load", () => {
+  window.addEventListener("load", async () => {
     if (window.__initDone) return;
     window.__initDone = true;
-    if (typeof initGame === "function") initGame();
+
+    if (window.Loader && typeof window.Loader.boot === "function") {
+      await window.Loader.boot();
+      return;
+    }
+
+    // fallback: если loader не подключился
+    if (typeof initGame === "function") await initGame();
   });
 </script>
 

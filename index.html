@@ -7,6 +7,30 @@
 content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+(function () {
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (!tg) return;
+
+  tg.ready();
+  tg.expand(); // просим занять максимум высоты :contentReference[oaicite:1]{index=1}
+
+  function applyViewportVars() {
+    const h  = (tg.viewportHeight || window.innerHeight) | 0;
+    const sh = (tg.viewportStableHeight || h) | 0;
+
+    document.documentElement.style.setProperty("--app-vh",  h + "px");
+    document.documentElement.style.setProperty("--app-svh", sh + "px");
+  }
+
+  tg.onEvent("viewportChanged", applyViewportVars); // реагируем на изменение высоты :contentReference[oaicite:2]{index=2}
+  window.addEventListener("resize", applyViewportVars);
+  if (window.visualViewport) visualViewport.addEventListener("resize", applyViewportVars);
+
+  applyViewportVars();
+  requestAnimationFrame(applyViewportVars);
+})();
+</script>
 <link rel="preload" as="image" href="/static/images/ui/loading-bg.png">
 <link rel="stylesheet" href="/static/css/style.css?v=1006">
 </head>

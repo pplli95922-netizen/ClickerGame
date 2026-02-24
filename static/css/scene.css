@@ -1,10 +1,12 @@
 body{
   margin:0;
   overflow:hidden;
-  /* чтобы “полосы” не были чёрными */
+
+  height: var(--app-svh, 100vh);
+  min-height: var(--app-svh, 100vh);
+
   background: url("/static/images/dungeon-bg2.jpg") center / cover no-repeat;
 }
-
 .game-wrapper{
   width: 430px;
   height: 932px;

@@ -1872,14 +1872,16 @@ slot.appendChild(img);
 if (itemModalBackdrop) itemModalBackdrop.onclick = closeItemModal;
 if (itemModalClose) itemModalClose.onclick = closeItemModal;
 
-// === FIX: правильный стартовый масштаб без первого клика ===
 function updateUiScale(){
   const BASE_W = 430;
   const BASE_H = 932;
 
+  const rootStyles = getComputedStyle(document.documentElement);
+  const stableH = parseInt(rootStyles.getPropertyValue("--app-svh"), 10) || window.innerHeight;
+
   const scale = Math.min(
     window.innerWidth / BASE_W,
-    window.innerHeight / BASE_H
+    stableH / BASE_H
   );
 
   document.documentElement.style.setProperty("--ui-scale", scale);

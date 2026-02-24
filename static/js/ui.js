@@ -711,7 +711,7 @@ function startSkillCooldownUI(ms){
         const pct = Math.max(0, Math.min(100, (leftMs / skillCdTotalMs) * 100));
         skillBtn.style.setProperty("--cdp", pct.toFixed(2) + "%");
 
-        skillBtn.textContent = "⏳" + leftSec.toFixed(1); // 1.3 → 0.0
+        skillBtn.textContent = String(Math.ceil(leftSec));
       } else {
         stopSkillCooldownUI();
         return;
@@ -772,7 +772,7 @@ function startSkill2CooldownUI(ms){
         const pct = Math.max(0, Math.min(100, (leftMs / skill2CdTotalMs) * 100));
         skillBtn2.style.setProperty("--cdp", pct.toFixed(2) + "%");
 
-        skillBtn2.textContent = "⏳" + leftSec.toFixed(1);
+        skillBtn2.textContent = String(Math.ceil(leftSec));
       } else {
         stopSkill2CooldownUI();
         return;
@@ -833,7 +833,7 @@ function startSkill3CooldownUI(ms){
         const pct = Math.max(0, Math.min(100, (leftMs / skill3CdTotalMs) * 100));
         skillBtn3.style.setProperty("--cdp", pct.toFixed(2) + "%");
 
-        skillBtn3.textContent = "⏳" + leftSec.toFixed(1);
+        skillBtn3.textContent = String(Math.ceil(leftSec));
       } else {
         stopSkill3CooldownUI();
         return;
@@ -896,7 +896,7 @@ function startSkill4CooldownUI(ms){
 
         skillBtn4.innerHTML =
   '<img class="skill-icon" src="static/images/skills/skill4.png" alt="Skill 4">' +
-  '<span class="skill-cdtext">⏳' + leftSec.toFixed(1) + '</span>';
+  '<span class="skill-cdtext">' + Math.ceil(leftSec) + '</span>';
       } else {
         stopSkill4CooldownUI();
         return;

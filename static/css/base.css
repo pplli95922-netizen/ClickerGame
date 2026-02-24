@@ -34,14 +34,17 @@ html, body {
   z-index: 9999;
 
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  padding-bottom: 40px;
+  padding-bottom: 0;
 
-  background: url("/static/images/ui/loading-bg.png") center center no-repeat;
-  background-size: cover;
+  background: rgb(16, 21, 26) url("/static/images/ui/loading-bg.png") center center / cover no-repeat;
 
   image-rendering: pixelated;
+}
+
+.loading-center{
+  text-align: center;
 }
 
 .loading-card{

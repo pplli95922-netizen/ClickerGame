@@ -7,7 +7,7 @@
 content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
+<link rel="preload" as="image" href="/static/images/ui/loading-bg.png">
 <link rel="stylesheet" href="/static/css/style.css?v=1006">
 </head>
 <body>
@@ -15,17 +15,11 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
 
   <div class="game-wrapper">
   <div id="loadingScreen" class="loading-screen">
-    <div class="loading-card">
-      <div class="loading-title">Ashbound</div>
-      <div id="loadingText" class="loading-text">Загрузка… 0%</div>
-
-      <div class="loading-bar">
-        <div id="loadingBarFill" class="loading-bar__fill" style="width:0%"></div>
-      </div>
-
-      <div class="loading-sub">Подгружаем навыки и спрайты…</div>
-    </div>
+  <div class="loading-center">
+    <div id="loadingText" class="loading-text">Загрузка… 0%</div>
+    <div class="loading-sub">Подгружаем навыки и спрайты…</div>
   </div>
+</div>
 
   <!-- дальше у вас идет bg, hud и т.д. -->
   <!-- MOVING BACKGROUND -->

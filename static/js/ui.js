@@ -28,7 +28,6 @@ if (tg) {
 const DESIGN_W = 430;
 const DESIGN_H = 932;
 
-let __uiScaleMax = 0;
 let __uiScaleLocked = false;
 
 function applyUiScale(){
@@ -52,7 +51,7 @@ function applyUiScale(){
     window.innerHeight
   );
 
-  const rawScale = Math.min(vw / DESIGN_W, vh / DESIGN_H);
+  const rawScale = (vw / DESIGN_W);
 
 // на старте держим максимум, чтобы Telegram не "отдалял" после первого viewportChanged
 const scale = __uiScaleLocked ? Math.max(__uiScaleMax, rawScale) : rawScale;

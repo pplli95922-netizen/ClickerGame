@@ -51,10 +51,19 @@ function applyUiScale(){
   document.documentElement.style.setProperty("--ui-scale", String(scale));
 }
 
-
+function warmupUiScale(){
+  let frames = 0;
+  const step = () => {
+    applyUiScale();
+    if (frames++ < 30) requestAnimationFrame(step);
+  };
+  step();
+  // контрольный пересчёт чуть позже
+  setTimeout(applyUiScale, 250);
+}
 
 // запуск + обновление при ресайзе/повороте/адресной строке Chrome
-applyUiScale();
+warmupUiScale();
 window.addEventListener("resize", applyUiScale);
 window.addEventListener("orientationchange", applyUiScale);
 if (window.visualViewport) window.visualViewport.addEventListener("resize", applyUiScale);

@@ -933,7 +933,10 @@ function syncUI(st){
   const _shouldRestart = (raf, until, incomingMs) => {
     if (!raf) return true; // локального таймера нет — надо стартовать
     const localLeft = Math.max(0, until - performance.now());
-    return incomingMs > (localLeft + 150); // если сервер прислал КД "длиннее" локального — это новый старт
+
+    // ✅ ВАЖНО: никогда не рестартим "в большую сторону" (это и давало рост КД и рывки)
+    // рестарт только если сервер прислал МЕНЬШЕ оставшегося времени (поджать вниз)
+    return (incomingMs + 200) < localLeft;
   };
 
   // --- Skill 1 ---

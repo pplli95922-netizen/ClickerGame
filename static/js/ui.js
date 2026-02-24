@@ -679,7 +679,7 @@ function stopSkillCooldownUI(){
 
   if (skillBtn){
     skillBtn.disabled = false;
-    skillBtn.textContent = "🔥";
+    skillBtn.textContent = "";
     skillBtn.classList.remove("cooldown");
     skillBtn.style.removeProperty("--cdp");
   }
@@ -740,7 +740,7 @@ function stopSkill2CooldownUI(){
 
   if (skillBtn2){
     skillBtn2.disabled = false;
-    skillBtn2.textContent = "⚡";
+    skillBtn2.textContent = "";
     skillBtn2.classList.remove("cooldown");
     skillBtn2.style.removeProperty("--cdp");
   }

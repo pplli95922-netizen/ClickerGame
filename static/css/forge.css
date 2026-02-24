@@ -800,3 +800,19 @@ aspect-ratio: 1 / 1;
   border: none !important;
   box-shadow: none !important;
 }
+
+/* === SKILL 1 FULL IMAGE === */
+.skill-1{
+  background: url("../images/skills/skill1.png") center center no-repeat !important;
+  background-size: 100% 100% !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* === SKILL 2 FULL IMAGE === */
+.skill-2{
+  background: url("../images/skills/skill2.png") center center no-repeat !important;
+  background-size: 100% 100% !important;
+  border: none !important;
+  box-shadow: none !important;
+}

@@ -792,3 +792,11 @@ aspect-ratio: 1 / 1;
   border: none !important;
   box-shadow: none !important;
 }
+
+/* === SKILL 3 FULL IMAGE === */
+.skill-3{
+  background: url("../images/skills/skill3.png") center center no-repeat !important;
+  background-size: 100% 100% !important;
+  border: none !important;
+  box-shadow: none !important;
+}

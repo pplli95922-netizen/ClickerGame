@@ -801,7 +801,7 @@ function stopSkill3CooldownUI(){
 
   if (skillBtn3){
     skillBtn3.disabled = false;
-    skillBtn3.textContent = "🛡️";
+    skillBtn3.textContent = "";
     skillBtn3.classList.remove("cooldown");
     skillBtn3.style.removeProperty("--cdp");
   }

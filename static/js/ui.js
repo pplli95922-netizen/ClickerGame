@@ -1593,7 +1593,6 @@ if (forgeUpgradeBtn) {
 
 function takeForgeDrop(){
   if (!pendingForgeItem) {
-    console.log("[forge] click, but pendingForgeItem is null");
     return;
   }
 
@@ -1608,7 +1607,6 @@ function takeForgeDrop(){
   hideForgeDrop();
   renderInventory();
 
-  console.log("[forge] taken -> inventory");
 }
 
 if (craftResult) {
@@ -1640,8 +1638,6 @@ document.addEventListener("click", (e) => {
   // меняй селектор под твой реальный слот/картинку:
   const hit = e.target.closest("#forgeDropSlot, #forgeDropImg, .forge-drop-slot, .forge-drop-item");
   if (!hit) return;
-
-  console.log("[forge] click captured on", hit);
 
   e.preventDefault();
   e.stopPropagation();

@@ -13,7 +13,12 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
   if (!tg) return;
 
   tg.ready();
-  tg.expand(); // просим занять максимум высоты :contentReference[oaicite:1]{index=1}
+  tg.expand();
+
+  tg.setHeaderColor("secondary_bg_color");
+  tg.setBackgroundColor("secondary_bg_color");
+
+  tg.enableClosingConfirmation();
 
   function applyViewportVars() {
     const h  = (tg.viewportHeight || window.innerHeight) | 0;

@@ -26,21 +26,27 @@ html, body {
 .rarity-epic      { border-color: rgba(190,120,255,0.9);  box-shadow: 0 0 18px rgba(190,120,255,0.28); }
 .rarity-legendary { border-color: rgba(255,205,90,0.95);  box-shadow: 0 0 22px rgba(255,205,90,0.32); }
 
-/* =====================
-   FULLSCREEN LOADING SCREEN
-   ===================== */
 .loading-screen{
-  position: fixed;
+  position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   z-index: 9999;
+
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  padding: 18px;
-  background: radial-gradient(circle at 50% 40%, rgba(40,50,60,0.95), rgba(10,12,14,0.98));
+  padding-bottom: 40px;
+
+  background: url("/static/images/ui/loading-bg.png") center center no-repeat;
+  background-size: cover;
+
+  image-rendering: pixelated;
 }
 
 .loading-card{
+  background: rgba(0,0,0,0.55);
+backdrop-filter: blur(2px);
   width: min(520px, 92vw);
   padding: 18px 18px 16px;
   border-radius: 18px;

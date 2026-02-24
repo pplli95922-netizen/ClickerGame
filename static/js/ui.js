@@ -862,7 +862,7 @@ function stopSkill4CooldownUI(){
 
   if (skillBtn4){
     skillBtn4.disabled = false;
-    skillBtn4.textContent = "💉";
+    skillBtn4.innerHTML = '<img class="skill-icon" src="static/images/skills/skill4.png" alt="Skill 4">';
     skillBtn4.classList.remove("cooldown");
     skillBtn4.style.removeProperty("--cdp");
   }
@@ -894,7 +894,9 @@ function startSkill4CooldownUI(ms){
         const pct = Math.max(0, Math.min(100, (leftMs / skill4CdTotalMs) * 100));
         skillBtn4.style.setProperty("--cdp", pct.toFixed(2) + "%");
 
-        skillBtn4.textContent = "⏳" + leftSec.toFixed(1);
+        skillBtn4.innerHTML =
+  '<img class="skill-icon" src="static/images/skills/skill4.png" alt="Skill 4">' +
+  '<span class="skill-cdtext">⏳' + leftSec.toFixed(1) + '</span>';
       } else {
         stopSkill4CooldownUI();
         return;

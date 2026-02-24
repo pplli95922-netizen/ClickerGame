@@ -579,6 +579,27 @@ aspect-ratio: 1 / 1;
   position: relative;
   overflow: hidden;
 }
+
+.skill-icon{
+  width: 72%;
+  height: 72%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  display: block;
+}
+
+.skill-cdtext{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: clamp(12px, 3.8vw, 18px);
+  text-shadow: 0 2px 0 rgba(0,0,0,0.65);
+  pointer-events: none;
+}
+
 /* ===== SKILL COOLDOWN FILL ===== */
 .skill-btn.cooldown::before{
   content:"";

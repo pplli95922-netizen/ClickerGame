@@ -51,13 +51,12 @@ function applyUiScale(){
     window.innerHeight
   );
 
-  const rawScale = (vw / DESIGN_W);
+  const fitScale = Math.min(vw / DESIGN_W, vh / DESIGN_H);
 
-// на старте держим максимум, чтобы Telegram не "отдалял" после первого viewportChanged
-const scale = __uiScaleLocked ? Math.max(__uiScaleMax, rawScale) : rawScale;
-if (__uiScaleLocked) __uiScaleMax = scale;
+// В Telegram можно увеличивать, в обычном браузере на ПК — НЕ увеличиваем выше 1
+const baseScale = tg ? fitScale : Math.min(1, fitScale);
 
-document.documentElement.style.setProperty("--ui-scale", String(scale));
+document.documentElement.style.setProperty("--ui-scale", String(baseScale));
 }
 
 function warmupUiScale(){
@@ -1876,22 +1875,3 @@ slot.appendChild(img);
 
 if (itemModalBackdrop) itemModalBackdrop.onclick = closeItemModal;
 if (itemModalClose) itemModalClose.onclick = closeItemModal;
-
-function updateUiScale(){
-  const BASE_W = 430;
-  const BASE_H = 932;
-
-  const rootStyles = getComputedStyle(document.documentElement);
-  const stableH = parseInt(rootStyles.getPropertyValue("--app-svh"), 10) || window.innerHeight;
-
-  const scale = Math.min(
-    window.innerWidth / BASE_W,
-    stableH / BASE_H
-  );
-
-  document.documentElement.style.setProperty("--ui-scale", scale);
-}
-
-window.addEventListener("resize", updateUiScale);
-window.addEventListener("DOMContentLoaded", updateUiScale);
-updateUiScale();

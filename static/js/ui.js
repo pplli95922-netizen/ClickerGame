@@ -21,8 +21,6 @@ if (tg) {
   tg.setBackgroundColor?.("#000000");
   tg.setHeaderColor?.("#000000");
 
-  // fullscreen сработает только после жеста
-  document.addEventListener("pointerdown", () => tg.requestFullscreen?.(), { once: true });
 }
 
 
@@ -30,35 +28,64 @@ if (tg) {
 const DESIGN_W = 430;
 const DESIGN_H = 932;
 
+let __uiScaleLocked = false;
+
 function applyUiScale(){
   const tg = window.Telegram?.WebApp;
   const vv = window.visualViewport;
 
-  const vw =
-    tg?.viewportWidth ??
-    (vv ? vv.width : window.innerWidth);
+    const doc = document.documentElement;
 
-  const vh =
-    Math.max(
-      tg?.viewportHeight ?? 0,
-      tg?.viewportStableHeight ?? 0,
-      (vv ? vv.height : window.innerHeight)
-    );
+  const vw = Math.max(
+    tg?.viewportWidth ?? 0,
+    (vv ? vv.width : 0),
+    doc.clientWidth,
+    window.innerWidth
+  );
 
-  // ✅ ВАЖНО: убрали "1", теперь может увеличиваться
-  const scale = Math.min(vw / DESIGN_W, vh / DESIGN_H);
+  const vh = Math.max(
+    tg?.viewportStableHeight ?? 0,
+    tg?.viewportHeight ?? 0,
+    (vv ? vv.height : 0),
+    doc.clientHeight,
+    window.innerHeight
+  );
 
-  document.documentElement.style.setProperty("--ui-scale", String(scale));
+  const rawScale = (vw / DESIGN_W);
+
+// на старте держим максимум, чтобы Telegram не "отдалял" после первого viewportChanged
+const scale = __uiScaleLocked ? Math.max(__uiScaleMax, rawScale) : rawScale;
+if (__uiScaleLocked) __uiScaleMax = scale;
+
+document.documentElement.style.setProperty("--ui-scale", String(scale));
 }
 
-
+function warmupUiScale(){
+  let frames = 0;
+  const step = () => {
+    applyUiScale();
+    if (frames++ < 30) requestAnimationFrame(step);
+  };
+  step();
+  // контрольный пересчёт чуть позже
+  setTimeout(applyUiScale, 250);
+}
 
 // запуск + обновление при ресайзе/повороте/адресной строке Chrome
-applyUiScale();
+warmupUiScale();
+
+window.addEventListener("load", applyUiScale, { once: true });
+window.addEventListener("pageshow", applyUiScale);
+setTimeout(applyUiScale, 500);
+setTimeout(applyUiScale, 1500);
+
 window.addEventListener("resize", applyUiScale);
 window.addEventListener("orientationchange", applyUiScale);
 if (window.visualViewport) window.visualViewport.addEventListener("resize", applyUiScale);
-window.Telegram?.WebApp?.onEvent?.("viewportChanged", applyUiScale);
+window.Telegram?.WebApp?.onEvent?.("viewportChanged", () => {
+  window.Telegram?.WebApp?.expand?.();
+  applyUiScale();
+});
 window.Telegram?.WebApp?.onEvent?.("fullscreenChanged", applyUiScale);
 
 const bossHpFill = document.getElementById("bossHpFill");
@@ -473,22 +500,24 @@ if (skillBtn4) {
 }
 
 skillBtn.addEventListener("click", function (e) {
-  e.preventDefault();
-  e.stopPropagation();
-  // если КД идёт — не запускаем анимацию и не шлём запрос
   if (skillCdLeft > 0 || skillBtn.disabled) {
-      // 🚫 если скелет ещё не дошёл — навык не даём
-  if (typeof window.canUseSkillNow === "function" && !window.canUseSkillNow()) {
-    if (typeof showErrorToast === "function") showErrorToast("Скелет далеко");
     return;
   }
-    if (typeof showErrorToast === "function") showErrorToast("Навык в КД");
+
+  if (typeof window.canUseSkillNow === "function" && !window.canUseSkillNow()) {
     return;
   }
 
   if (typeof window.trySkillAttack === "function") {
-    window.trySkillAttack();
+  const ok = window.trySkillAttack();
+
+  if (ok) {
+    const nowS = Date.now() / 1000;
+    const adrUntil = Number(window.adrenaline_until || 0);
+    const cdMs = (Number.isFinite(adrUntil) && adrUntil > nowS) ? 600 : 1200; // 50% от 1.2s
+    startSkillCooldownUI(cdMs);
   }
+}
 });
 
 
@@ -668,7 +697,7 @@ function stopSkillCooldownUI(){
 
   if (skillBtn){
     skillBtn.disabled = false;
-    skillBtn.textContent = "🔥";
+    skillBtn.textContent = "";
     skillBtn.classList.remove("cooldown");
     skillBtn.style.removeProperty("--cdp");
   }
@@ -700,7 +729,7 @@ function startSkillCooldownUI(ms){
         const pct = Math.max(0, Math.min(100, (leftMs / skillCdTotalMs) * 100));
         skillBtn.style.setProperty("--cdp", pct.toFixed(2) + "%");
 
-        skillBtn.textContent = "⏳" + leftSec.toFixed(1); // 1.3 → 0.0
+        skillBtn.textContent = String(Math.ceil(leftSec));
       } else {
         stopSkillCooldownUI();
         return;
@@ -729,7 +758,7 @@ function stopSkill2CooldownUI(){
 
   if (skillBtn2){
     skillBtn2.disabled = false;
-    skillBtn2.textContent = "⚡";
+    skillBtn2.textContent = "";
     skillBtn2.classList.remove("cooldown");
     skillBtn2.style.removeProperty("--cdp");
   }
@@ -761,7 +790,7 @@ function startSkill2CooldownUI(ms){
         const pct = Math.max(0, Math.min(100, (leftMs / skill2CdTotalMs) * 100));
         skillBtn2.style.setProperty("--cdp", pct.toFixed(2) + "%");
 
-        skillBtn2.textContent = "⏳" + leftSec.toFixed(1);
+        skillBtn2.textContent = String(Math.ceil(leftSec));
       } else {
         stopSkill2CooldownUI();
         return;
@@ -790,7 +819,7 @@ function stopSkill3CooldownUI(){
 
   if (skillBtn3){
     skillBtn3.disabled = false;
-    skillBtn3.textContent = "🛡️";
+    skillBtn3.textContent = "";
     skillBtn3.classList.remove("cooldown");
     skillBtn3.style.removeProperty("--cdp");
   }
@@ -822,7 +851,7 @@ function startSkill3CooldownUI(ms){
         const pct = Math.max(0, Math.min(100, (leftMs / skill3CdTotalMs) * 100));
         skillBtn3.style.setProperty("--cdp", pct.toFixed(2) + "%");
 
-        skillBtn3.textContent = "⏳" + leftSec.toFixed(1);
+        skillBtn3.textContent = String(Math.ceil(leftSec));
       } else {
         stopSkill3CooldownUI();
         return;
@@ -851,7 +880,7 @@ function stopSkill4CooldownUI(){
 
   if (skillBtn4){
     skillBtn4.disabled = false;
-    skillBtn4.textContent = "💉";
+    skillBtn4.innerHTML = '<img class="skill-icon" src="static/images/skills/skill4.png" alt="Skill 4">';
     skillBtn4.classList.remove("cooldown");
     skillBtn4.style.removeProperty("--cdp");
   }
@@ -883,7 +912,9 @@ function startSkill4CooldownUI(ms){
         const pct = Math.max(0, Math.min(100, (leftMs / skill4CdTotalMs) * 100));
         skillBtn4.style.setProperty("--cdp", pct.toFixed(2) + "%");
 
-        skillBtn4.textContent = "⏳" + leftSec.toFixed(1);
+        skillBtn4.innerHTML =
+  '<img class="skill-icon" src="static/images/skills/skill4.png" alt="Skill 4">' +
+  '<span class="skill-cdtext">' + Math.ceil(leftSec) + '</span>';
       } else {
         stopSkill4CooldownUI();
         return;
@@ -897,71 +928,98 @@ function startSkill4CooldownUI(ms){
 }
 
 function syncUI(st){
-    // ===== cooldown навыка =====
-// ===== cooldown навыка (точный, поддерживает 1.3s) =====
-if (skillBtn) {
-  const raw =
-    (st && (st.skill_cd ?? st.skill_cd_left ?? st.skillCooldown ?? st.skill_cooldown));
 
-  // стартуем по серверу, если сервер прислал
-  if (raw !== undefined) {
-    const v = Math.max(0, Number(raw) || 0);
-    const ms = (v > 1000) ? v : (v * 1000); // если вдруг пришли ms
-    startSkillCooldownUI(ms);
-  } else {
-    // если сервер НЕ прислал, но локально уже идёт КД — не перезапускаем
-    if (!skillCdRAF && (typeof window.skill_cd === "number") && window.skill_cd > 0) {
-      startSkillCooldownUI(window.skill_cd * 1000);
+  // ===== cooldowns (без перезапуска, чтобы не было рывков заливки) =====
+  const _shouldRestart = (raf, until, incomingMs) => {
+    if (!raf) return true; // локального таймера нет — надо стартовать
+    const localLeft = Math.max(0, until - performance.now());
+
+    // ✅ ВАЖНО: никогда не рестартим "в большую сторону" (это и давало рост КД и рывки)
+    // рестарт только если сервер прислал МЕНЬШЕ оставшегося времени (поджать вниз)
+    return (incomingMs + 200) < localLeft;
+  };
+
+  // --- Skill 1 ---
+  if (skillBtn) {
+    const raw = st && (st.skill_cd ?? st.skill_cd_left ?? st.skillCooldown ?? st.skill_cooldown);
+
+    if (raw !== undefined) {
+      const v = Math.max(0, Number(raw) || 0);
+      const ms = (v > 1000) ? v : (v * 1000);
+
+      if (v === 0) {
+        if (!skillCdRAF) stopSkillCooldownUI(); // если локально не тикает — сброс
+      } else {
+        if (_shouldRestart(skillCdRAF, skillCdUntil, ms)) startSkillCooldownUI(ms);
+      }
+    } else {
+      if (!skillCdRAF && (typeof window.skill_cd === "number") && window.skill_cd > 0) {
+        startSkillCooldownUI(window.skill_cd * 1000);
+      }
     }
   }
-}
 
-if (skillBtn2) {
-  const raw =
-    (st && (st.skill2_cd ?? st.skill2_cd_left ?? st.skill2Cooldown ?? st.skill2_cooldown));
+  // --- Skill 2 ---
+  if (skillBtn2) {
+    const raw = st && (st.skill2_cd ?? st.skill2_cd_left ?? st.skill2Cooldown ?? st.skill2_cooldown);
 
-    if (skillBtn3) {
-  const raw =
-    (st && (st.skill3_cd ?? st.skill3_cd_left ?? st.skill3Cooldown ?? st.skill3_cooldown));
+    if (raw !== undefined) {
+      const v = Math.max(0, Number(raw) || 0);
+      const ms = (v > 1000) ? v : (v * 1000);
 
-  if (raw !== undefined) {
-    const v = Math.max(0, Number(raw) || 0);
-    const ms = (v > 1000) ? v : (v * 1000);
-    startSkill3CooldownUI(ms);
-  } else {
-    if (!skill3CdRAF && (typeof window.skill3_cd === "number") && window.skill3_cd > 0) {
-      startSkill3CooldownUI(window.skill3_cd * 1000);
+      if (v === 0) {
+        if (!skill2CdRAF) stopSkill2CooldownUI();
+      } else {
+        if (_shouldRestart(skill2CdRAF, skill2CdUntil, ms)) startSkill2CooldownUI(ms);
+      }
+    } else {
+      if (!skill2CdRAF && (typeof window.skill2_cd === "number") && window.skill2_cd > 0) {
+        startSkill2CooldownUI(window.skill2_cd * 1000);
+      }
     }
   }
-}
 
-  if (raw !== undefined) {
-    const v = Math.max(0, Number(raw) || 0);
-    const ms = (v > 1000) ? v : (v * 1000);
-    startSkill2CooldownUI(ms);
-  } else {
-    if (!skill2CdRAF && (typeof window.skill2_cd === "number") && window.skill2_cd > 0) {
-      startSkill2CooldownUI(window.skill2_cd * 1000);
+  // --- Skill 3 ---
+  if (skillBtn3) {
+    const raw = st && (st.skill3_cd ?? st.skill3_cd_left ?? st.skill3Cooldown ?? st.skill3_cooldown);
+
+    if (raw !== undefined) {
+      const v = Math.max(0, Number(raw) || 0);
+      const ms = (v > 1000) ? v : (v * 1000);
+
+      if (v === 0) {
+        if (!skill3CdRAF) stopSkill3CooldownUI();
+      } else {
+        if (_shouldRestart(skill3CdRAF, skill3CdUntil, ms)) startSkill3CooldownUI(ms);
+      }
+    } else {
+      if (!skill3CdRAF && (typeof window.skill3_cd === "number") && window.skill3_cd > 0) {
+        startSkill3CooldownUI(window.skill3_cd * 1000);
+      }
     }
   }
-}
 
-if (skillBtn4) {
-  const raw =
-    (st && (st.skill4_cd ?? st.skill4_cd_left ?? st.skill4Cooldown ?? st.skill4_cooldown));
+  // --- Skill 4 ---
+  if (skillBtn4) {
+    const raw = st && (st.skill4_cd ?? st.skill4_cd_left ?? st.skill4Cooldown ?? st.skill4_cooldown);
 
-  if (raw !== undefined) {
-    const v = Math.max(0, Number(raw) || 0);
-    const ms = (v > 1000) ? v : (v * 1000);
-    startSkill4CooldownUI(ms);
-  } else {
-    if (!skill4CdRAF && (typeof window.skill4_cd === "number") && window.skill4_cd > 0) {
-      startSkill4CooldownUI(window.skill4_cd * 1000);
+    if (raw !== undefined) {
+      const v = Math.max(0, Number(raw) || 0);
+      const ms = (v > 1000) ? v : (v * 1000);
+
+      if (v === 0) {
+        if (!skill4CdRAF) stopSkill4CooldownUI();
+      } else {
+        if (_shouldRestart(skill4CdRAF, skill4CdUntil, ms)) startSkill4CooldownUI(ms);
+      }
+    } else {
+      if (!skill4CdRAF && (typeof window.skill4_cd === "number") && window.skill4_cd > 0) {
+        startSkill4CooldownUI(window.skill4_cd * 1000);
+      }
     }
   }
-}
 
-  // дамаг-флоат по изменению HP босса (если используешь prevBossHp из state.js — оставь его там)
+  // ===== дальше твой код syncUI как был =====
   if (typeof renderStats === "function") renderStats();
   if (typeof updateBossHpBar === "function") updateBossHpBar();
   if (typeof renderInventory === "function") renderInventory();
@@ -969,26 +1027,26 @@ if (skillBtn4) {
   if (coinsTxt) coinsTxt.textContent = "💰 " + (coins ?? 0);
   if (woodTxt) woodTxt.textContent = (resources && resources.wood) ? resources.wood : 0;
   if (oreTxt) oreTxt.textContent = (resources && resources.ore !== undefined) ? resources.ore : 0;
-  // ===== HERO HUD RENDER =====
-if (heroHudLvl) heroHudLvl.textContent = `LVL ${Math.max(1, Number(window.player_lvl ?? player_lvl) || 1)}`;
 
-const _hpMax = Math.max(1, Number(window.hp_max ?? hp_max) || 1);
-const _hp = Math.max(0, Number(window.hp ?? hp) || 0);
-const _hpPct = Math.max(0, Math.min(100, (_hp / _hpMax) * 100));
-if (heroHpFill) heroHpFill.style.width = _hpPct + "%";
-if (heroHpText) heroHpText.textContent = `${Math.round(_hp)} / ${Math.round(_hpMax)}`;
+  if (heroHudLvl) heroHudLvl.textContent = `LVL ${Math.max(1, Number(window.player_lvl ?? player_lvl) || 1)}`;
 
-const _mpMax = Math.max(1, Number(window.mana_max ?? mana_max) || 1);
-const _mp = Math.max(0, Number(window.mana ?? mana) || 0);
-const _mpPct = Math.max(0, Math.min(100, (_mp / _mpMax) * 100));
-if (heroMpFill) heroMpFill.style.width = _mpPct + "%";
-if (heroMpText) heroMpText.textContent = `${Math.round(_mp)} / ${Math.round(_mpMax)}`;
+  const _hpMax = Math.max(1, Number(window.hp_max ?? hp_max) || 1);
+  const _hp = Math.max(0, Number(window.hp ?? hp) || 0);
+  const _hpPct = Math.max(0, Math.min(100, (_hp / _hpMax) * 100));
+  if (heroHpFill) heroHpFill.style.width = _hpPct + "%";
+  if (heroHpText) heroHpText.textContent = `${Math.round(_hp)} / ${Math.round(_hpMax)}`;
 
-const _xpNeed = Math.max(1, Number(window.player_xp_need ?? player_xp_need) || 1);
-const _xp = Math.max(0, Number(window.player_xp ?? player_xp) || 0);
-const _xpPct = Math.max(0, Math.min(100, (_xp / _xpNeed) * 100));
-if (heroExpFill) heroExpFill.style.width = _xpPct + "%";
-if (heroXpText) heroXpText.textContent = `XP: ${Math.round(_xp)} / ${Math.round(_xpNeed)}`;
+  const _mpMax = Math.max(1, Number(window.mana_max ?? mana_max) || 1);
+  const _mp = Math.max(0, Number(window.mana ?? mana) || 0);
+  const _mpPct = Math.max(0, Math.min(100, (_mp / _mpMax) * 100));
+  if (heroMpFill) heroMpFill.style.width = _mpPct + "%";
+  if (heroMpText) heroMpText.textContent = `${Math.round(_mp)} / ${Math.round(_mpMax)}`;
+
+  const _xpNeed = Math.max(1, Number(window.player_xp_need ?? player_xp_need) || 1);
+  const _xp = Math.max(0, Number(window.player_xp ?? player_xp) || 0);
+  const _xpPct = Math.max(0, Math.min(100, (_xp / _xpNeed) * 100));
+  if (heroExpFill) heroExpFill.style.width = _xpPct + "%";
+  if (heroXpText) heroXpText.textContent = `XP: ${Math.round(_xp)} / ${Math.round(_xpNeed)}`;
 
   refreshNextBtn();
 }
@@ -1535,7 +1593,6 @@ if (forgeUpgradeBtn) {
 
 function takeForgeDrop(){
   if (!pendingForgeItem) {
-    console.log("[forge] click, but pendingForgeItem is null");
     return;
   }
 
@@ -1550,7 +1607,6 @@ function takeForgeDrop(){
   hideForgeDrop();
   renderInventory();
 
-  console.log("[forge] taken -> inventory");
 }
 
 if (craftResult) {
@@ -1582,8 +1638,6 @@ document.addEventListener("click", (e) => {
   // меняй селектор под твой реальный слот/картинку:
   const hit = e.target.closest("#forgeDropSlot, #forgeDropImg, .forge-drop-slot, .forge-drop-item");
   if (!hit) return;
-
-  console.log("[forge] click captured on", hit);
 
   e.preventDefault();
   e.stopPropagation();
@@ -1822,3 +1876,22 @@ slot.appendChild(img);
 
 if (itemModalBackdrop) itemModalBackdrop.onclick = closeItemModal;
 if (itemModalClose) itemModalClose.onclick = closeItemModal;
+
+function updateUiScale(){
+  const BASE_W = 430;
+  const BASE_H = 932;
+
+  const rootStyles = getComputedStyle(document.documentElement);
+  const stableH = parseInt(rootStyles.getPropertyValue("--app-svh"), 10) || window.innerHeight;
+
+  const scale = Math.min(
+    window.innerWidth / BASE_W,
+    stableH / BASE_H
+  );
+
+  document.documentElement.style.setProperty("--ui-scale", scale);
+}
+
+window.addEventListener("resize", updateUiScale);
+window.addEventListener("DOMContentLoaded", updateUiScale);
+updateUiScale();

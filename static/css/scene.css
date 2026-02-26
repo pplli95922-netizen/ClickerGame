@@ -1,24 +1,23 @@
 body{
   margin:0;
   overflow:hidden;
-  position:fixed;
-  inset:0;
 
-  /* чтобы “полосы” не были чёрными */
+  height: var(--app-svh, 100dvh);
+  min-height: var(--app-svh, 100dvh);
+
   background: url("/static/images/dungeon-bg2.jpg") center / cover no-repeat;
 }
-
 .game-wrapper{
   width: 430px;
   height: 932px;
   position: fixed;
   left: 50%;
-  top: 50%;
+  top: 0;
   overflow: hidden;
   background:#000;
 
-  transform: translate(-50%, -50%) scale(var(--ui-scale, 1));
-  transform-origin: center;
+  transform: translateX(-50%) scale(var(--ui-scale, 1));
+  transform-origin: top center;
   will-change: transform;
 }
 

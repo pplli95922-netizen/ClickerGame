@@ -17,6 +17,7 @@ from game.logic import (
     server_tick,
     use_guard_break,
     use_adrenaline,
+    craft_recipe_max_for_forge_lvl,
 )
 from game.storage import load_state, save_state
 
@@ -132,6 +133,9 @@ def api_use_skill(payload: Dict[str, Any]):
     elif skill_id == "guard_break":
         event = use_guard_break(state)
 
+    elif skill_id == "anti_regen":
+        event = use_guard_break(state)
+
     elif skill_id == "adrenaline":
         event = use_adrenaline(state)
 
@@ -154,3 +158,24 @@ def api_set_boss(payload: Dict[str, Any]):
     save_state(user_id, state)
 
     return {"state": state, "event": event}
+
+
+@app.post("/set_craft_recipe")
+def api_set_craft_recipe(payload: Dict[str, Any]):
+    user_id = int(payload.get("user_id", 0))
+    recipe = int(payload.get("recipe", 1))
+
+    state = load_state(user_id)
+
+    forge_lvl = int(state.get("forge_lvl", 1) or 1)
+    recipe_max = craft_recipe_max_for_forge_lvl(forge_lvl)
+
+    # разрешаем только max или max-1
+    min_allowed = max(1, recipe_max - 1)
+    if recipe < min_allowed or recipe > recipe_max:
+        return {"ok": False, "reason": "recipe_locked", "min": min_allowed, "max": recipe_max}
+
+    state["craft_recipe_selected"] = recipe
+
+    save_state(user_id, state)
+    return {"ok": True, "state": state}

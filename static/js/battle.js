@@ -114,7 +114,9 @@ let pendingSkillRequest = false;
 let pendingSkill2Attack = false;
 let pendingSkill2Request = false;
 let pendingSkill3Attack = false;
+let pendingSkill4Attack = false;
 let pendingSkill3Request = false;
+let pendingSkill4Request = false;
 let battlePaused = false;
 
 window.__battleBgRafId = window.__battleBgRafId || null;
@@ -670,6 +672,30 @@ function trySkill3Attack(){
 
 window.trySkill3Attack = trySkill3Attack;
 
+function trySkill4Attack(){
+  if (battlePaused) return false;
+  if (mode !== MODE.FIGHT) return false;
+  if (!getNearestMobInRange(160)) return false;
+  if (pendingSkill4Request) return false;
+
+  if (heroIsHit) {
+    pendingSkill4Attack = true;
+    pendingSkill4Request = true;
+    return false;
+  }
+
+  if (heroIsAttacking) return false;
+
+  // бафф — визуально используем вторую атаку, чтобы было "каст"
+  playHeroAttack2();
+
+  if (typeof window.useSkill === "function") window.useSkill("adrenaline");
+
+  return true;
+}
+
+window.trySkill4Attack = trySkill4Attack;
+
 function playHeroHit(){
   if (!heroEl) return;
   if (heroIsHit) return;
@@ -730,6 +756,20 @@ if (pendingSkill3Attack) {
   if (pendingSkill3Request) {
     pendingSkill3Request = false;
     if (typeof window.useSkill === "function") window.useSkill("guard_break");
+  }
+
+  return;
+}
+
+if (pendingSkill4Attack) {
+  pendingSkill4Attack = false;
+
+  // бафф — используем вторую атаку как "каст"
+  playHeroAttack2();
+
+  if (pendingSkill4Request) {
+    pendingSkill4Request = false;
+    if (typeof window.useSkill === "function") window.useSkill("adrenaline");
   }
 
   return;

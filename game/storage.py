@@ -5,13 +5,7 @@ import sqlite3
 from typing import Optional
 
 from .state import PlayerState, create_state
-from .logic import (
-    forge_xp_needed,
-    get_craft_cost_preview,
-    player_xp_needed,
-    craft_recipe_max_for_forge_lvl,
-    craft_recipe_cap_lvl,
-)
+from .logic import forge_xp_needed, get_craft_cost_preview
 from .upgrades import BOSSES
 
 
@@ -73,29 +67,9 @@ def _apply_backfill_and_derived(state: PlayerState) -> PlayerState:
     if "adrenaline_until" not in state:
         state["adrenaline_until"] = 0.0
 
-    # craft recipe backfill + clamp
-    if "craft_recipe_selected" not in state:
-        state["craft_recipe_selected"] = 1
-
-    forge_lvl = int(state.get("forge_lvl", 1) or 1)
-    recipe_max = int(craft_recipe_max_for_forge_lvl(forge_lvl))
-
-    # разрешаем только max или max-1
-    sel = int(state.get("craft_recipe_selected", recipe_max) or recipe_max)
-    min_allowed = max(1, recipe_max - 1)
-    if sel < min_allowed:
-        sel = min_allowed
-    if sel > recipe_max:
-        sel = recipe_max
-
-    state["craft_recipe_max"] = recipe_max
-    state["craft_recipe_selected"] = sel
-    state["craft_recipe_cap_lvl"] = int(craft_recipe_cap_lvl(sel))
-
     # derived поля
     state["forge_xp_need"] = int(forge_xp_needed(state.get("forge_lvl", 1)))
     state["craft_cost_preview"] = get_craft_cost_preview(state)
-    state["player_xp_need"] = int(player_xp_needed(state.get("player_lvl", 1)))
 
     return state
 

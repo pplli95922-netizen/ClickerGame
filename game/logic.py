@@ -52,41 +52,18 @@ def craft_coins_cost(forge_lvl: int) -> int:
 
 
 def get_craft_cost_preview(state: PlayerState) -> dict:
-    forge_lvl = int(state.get("forge_lvl", 1) or 1)
+    forge_lvl = int(state.get("forge_lvl", 1))
 
-    # выбранный рецепт (если нет — считаем из forge_lvl)
-    recipe_sel = int(state.get("craft_recipe_selected") or craft_recipe_max_for_forge_lvl(forge_lvl))
-    cap_lvl = craft_recipe_cap_lvl(recipe_sel)
+    # монеты — ровно как в handle_craft
+    coins_cost = craft_coins_cost(forge_lvl)
 
-    # монеты считаем по "сложности рецепта", а не по текущему forge_lvl
-    coins_cost = craft_coins_cost(cap_lvl)
-
-    # ресурсы по рецепту (пример — ты потом легко подкрутишь)
-    if recipe_sel == 1:
-        resources_cost = {"wood": 1}
-    elif recipe_sel == 2:
-        resources_cost = {"wood": 2, "ore": 1}
-    elif recipe_sel == 3:
+    # ресурсы — ровно как в handle_craft
+    if forge_lvl >= 4:
         resources_cost = {"wood": 3, "ore": 2}
-    else:  # recipe 4+
-        resources_cost = {"wood": 4, "ore": 3}
+    else:
+        resources_cost = {"wood": 1}
 
     return {"coins": int(coins_cost), "resources": dict(resources_cost)}
-
-
-
-def craft_recipe_max_for_forge_lvl(forge_lvl: int) -> int:
-    forge_lvl = int(forge_lvl)
-    if forge_lvl < 1:
-        forge_lvl = 1
-    return (forge_lvl - 1) // 5 + 1
-
-def craft_recipe_cap_lvl(recipe_id: int) -> int:
-    # recipe 1 => 5, recipe 2 => 10, etc.
-    recipe_id = int(recipe_id)
-    if recipe_id < 1:
-        recipe_id = 1
-    return recipe_id * 5
 
 
 def roll_reward_resources(reward_resources: dict) -> dict:
@@ -270,26 +247,16 @@ def handle_craft(state: PlayerState, recipe_id: str) -> dict:
         
         state["resources"][res] -= qty
 
-    forge_lvl = int(state.get("forge_lvl", 1) or 1)
-    recipe_max = craft_recipe_max_for_forge_lvl(forge_lvl)
-    recipe_sel = int(state.get("craft_recipe_selected") or recipe_max)
+    # --- ХР кузнице даём всегда, но НЕ выше лимита текущего уровня ---
+    xp_need = forge_xp_needed(int(state.get("forge_lvl", 1)))
+    cur_xp = int(state.get("forge_xp", 0))
 
-    grant_forge_xp = (recipe_sel == recipe_max)
-
-    # --- ХР кузнице: начисляем ТОЛЬКО на максимальном рецепте, и не выше лимита ---
-    xp_need = int(forge_xp_needed(forge_lvl))
-    cur_xp = int(state.get("forge_xp", 0) or 0)
-
-    # если уже набрано — не копим дальше
-    if cur_xp >= xp_need:
-        state["forge_xp"] = xp_need
+    if cur_xp < xp_need:
+        add = min(int(FORGE_XP_PER_CRAFT), xp_need - cur_xp)
+        state["forge_xp"] = cur_xp + add
     else:
-        # добавляем XP только если выбран максимальный рецепт
-        if grant_forge_xp:
-            state["forge_xp"] = min(xp_need, cur_xp + int(FORGE_XP_PER_CRAFT))
-        else:
-            # крафт "назад" — XP кузни не даём
-            state["forge_xp"] = cur_xp
+        # уже набрано — не копим дальше
+        state["forge_xp"] = xp_need
 
     # --- шанс успеха ---
     success = check_chance(success_chance)

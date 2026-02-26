@@ -579,29 +579,6 @@ aspect-ratio: 1 / 1;
   position: relative;
   overflow: hidden;
 }
-
-.skill-icon{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 16px;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  display: block;
-}
-
-.skill-cdtext{
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: clamp(12px, 3.8vw, 18px);
-  text-shadow: 0 2px 0 rgba(0,0,0,0.65);
-  pointer-events: none;
-}
-
 /* ===== SKILL COOLDOWN FILL ===== */
 .skill-btn.cooldown::before{
   content:"";
@@ -783,36 +760,4 @@ aspect-ratio: 1 / 1;
 @keyframes fireplaceAnim{
   from { background-position: 0 0; }
   to   { background-position: calc(var(--fw) * -6) 0; }
-}
-
-/* === SKILL 4 FULL BACKGROUND IMAGE === */
-.skill-4{
-  background: url("../images/skills/skill4.png") center center no-repeat !important;
-  background-size: 100% 100% !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-/* === SKILL 3 FULL IMAGE === */
-.skill-3{
-  background: url("../images/skills/skill3.png") center center no-repeat !important;
-  background-size: 100% 100% !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-/* === SKILL 1 FULL IMAGE === */
-.skill-1{
-  background: url("../images/skills/skill1.png") center center no-repeat !important;
-  background-size: 100% 100% !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-/* === SKILL 2 FULL IMAGE === */
-.skill-2{
-  background: url("../images/skills/skill2.png") center center no-repeat !important;
-  background-size: 100% 100% !important;
-  border: none !important;
-  box-shadow: none !important;
 }

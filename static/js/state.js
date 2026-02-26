@@ -28,6 +28,9 @@ if (!USER_ID) {
   USER_ID = 1;
 }
 
+console.log("USER_ID from URL/Telegram =", USER_ID, "name =", playerName)
+
+
 let coins = 0;
 let attack = 0;
 let player_lvl = 1;
@@ -183,15 +186,6 @@ if (lvlRaw !== undefined) boss_lvl = Math.max(1, Number(lvlRaw) || 1);
 window.boss_lvl = Math.max(1, Number(boss_lvl) || 1);
 boss_lvl = window.boss_lvl;
 
-// ===== adrenaline buff (нужно для уменьшения КД core_strike) =====
-const adrUntilRaw =
-  st.adrenaline_until ?? st.adr_until ?? st.adrenalineUntil;
-
-if (adrUntilRaw !== undefined) {
-  const v = Number(adrUntilRaw);
-  if (Number.isFinite(v)) window.adrenaline_until = v; // секунды (как у бэка)
-}
-
 // ===== cooldowns from backend (skill_cd_until) =====
 if (st.skill_cd_until && typeof st.skill_cd_until === "object") {
   const nowS = Date.now() / 1000;
@@ -208,18 +202,9 @@ if (st.skill_cd_until && typeof st.skill_cd_until === "object") {
     const until = Number(st.skill_cd_until[id]);
     if (!Number.isFinite(until)) continue;
 
-    let left = Math.max(0, +(until - nowS).toFixed(2));
-
-// ✅ адреналин режет КД core_strike на 50% пока активен
-if (id === "core_strike") {
-  const adrUntil = Number(window.adrenaline_until || 0);
-  if (Number.isFinite(adrUntil) && adrUntil > nowS) {
-    left = +Math.max(0, left * 0.5).toFixed(2);
-  }
-}
-
-st[field] = left;
-window[field] = left;
+    const left = Math.max(0, +(until - nowS).toFixed(2));
+    st[field] = left;
+    window[field] = left;
   }
 }
   const cd =
@@ -847,6 +832,11 @@ const cd = (cdFromUntil !== undefined) ? cdFromUntil : ((cdFromState !== undefin
   if (usedId === "guard_break") delete st.skill_cd;
 }
 
+
+
+    console.log("[use_skill] raw:", data);
+    console.log("[use_skill] picked state:", st);
+    console.log("[use_skill] picked boss_hp:", st && st.boss_hp, "boss_max_hp:", st && st.boss_max_hp);
 
     if (st) {
       const prevHp = Number(boss_hp) || 0;

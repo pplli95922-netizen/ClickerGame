@@ -1747,11 +1747,6 @@ m.hitFrames = null;
 // ✅ ФИКС РАСТЯЖЕНИЯ: смерть не должна наследовать "atk"-раздув
 m.el.classList.remove("mob--atk");
 
-// ❗ ОТКЛЮЧАЕМ CSS-анимацию скелета чтобы не мигал
-m.el.style.animation = "none";
-m.el.style.transform = "translateX(-50%) scale(1.5) scaleX(-1)";
-m.el.classList.remove("boss--skeleton");
-
 // сбрасываем всё, что могло зафиксироваться инлайном
 m.el.style.width = "";
 m.el.style.height = "";

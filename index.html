@@ -7,51 +7,12 @@
 content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script>
-(function () {
-  const tg = window.Telegram && window.Telegram.WebApp;
-  if (!tg) return;
 
-  tg.ready();
-  tg.expand();
-  
-    // Fullscreen в Telegram срабатывает только после жеста пользователя
-  const requestFsOnce = () => {
-    try { tg.requestFullscreen(); } catch (e) {}
-  };
-
-  document.addEventListener("touchstart", requestFsOnce, { once: true, passive: true });
-  document.addEventListener("click", requestFsOnce, { once: true });
-
-  function applyViewportVars() {
-    const h  = (tg.viewportHeight || window.innerHeight) | 0;
-    const sh = (tg.viewportStableHeight || h) | 0;
-
-    document.documentElement.style.setProperty("--app-vh",  h + "px");
-    document.documentElement.style.setProperty("--app-svh", sh + "px");
-  }
-
-  tg.onEvent("viewportChanged", applyViewportVars); // реагируем на изменение высоты :contentReference[oaicite:2]{index=2}
-  window.addEventListener("resize", applyViewportVars);
-  if (window.visualViewport) visualViewport.addEventListener("resize", applyViewportVars);
-
-  applyViewportVars();
-  requestAnimationFrame(applyViewportVars);
-})();
-</script>
-<link rel="preload" as="image" href="/static/images/ui/loading-bg.png">
 <link rel="stylesheet" href="/static/css/style.css?v=1006">
 </head>
 <body>
-<div class="game-wrapper">
-  <div id="loadingScreen" class="loading-screen">
-  <div class="loading-center">
-    <div id="loadingText" class="loading-text">Загрузка… 0%</div>
-    <div class="loading-sub">Подгружаем навыки и спрайты…</div>
-  </div>
-</div>
 
-  <!-- дальше у вас идет bg, hud и т.д. -->
+<div class="game-wrapper">
   <!-- MOVING BACKGROUND -->
   <div id="bg" class="bg">
     <div class="bg__tile" id="bgA"></div>
@@ -119,10 +80,12 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
 </div>
 
 <div class="skills-panel" id="skillsPanel">
-  <button id="skillBtn" class="skill-btn skill-1" type="button"></button>
-  <button id="skillBtn2" class="skill-btn skill-2" type="button" title="Навык 2"></button>
-  <button id="skillBtn3" class="skill-btn skill-3" data-skill="3"></button>
-  <button id="skillBtn4" class="skill-btn skill-4" data-skill="4"></button>
+  <button id="skillBtn" class="skill-btn" type="button">🔥</button>
+
+  <button id="skillBtn2" class="skill-btn" type="button" title="Навык 2">⚡</button>
+
+  <button id="skillBtn3" class="skill-btn" type="button" title="Антиреген">🛡️</button>
+  <button id="skillBtn4" class="skill-btn" type="button" title="Навык 4">💉</button>
   <button class="skill-btn skill-btn--empty" type="button" disabled>5</button>
   <button class="skill-btn skill-btn--empty" type="button" disabled>6</button>
 </div>
@@ -307,20 +270,13 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
 <script src="/static/js/ui.js?v=3"></script>
 <script src="/static/js/fx.js?v=1"></script>
 <script src="/static/js/battle.js?v=2"></script>
-<script src="/static/js/loader.js?v=1"></script>
+
 
 <script>
-  window.addEventListener("load", async () => {
+  window.addEventListener("load", () => {
     if (window.__initDone) return;
     window.__initDone = true;
-
-    if (window.Loader && typeof window.Loader.boot === "function") {
-      await window.Loader.boot();
-      return;
-    }
-
-    // fallback: если loader не подключился
-    if (typeof initGame === "function") await initGame();
+    if (typeof initGame === "function") initGame();
   });
 </script>
 

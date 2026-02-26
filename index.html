@@ -15,13 +15,7 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
   tg.ready();
   tg.expand();
   
-    // Fullscreen в Telegram срабатывает только после жеста пользователя
-  const requestFsOnce = () => {
-    try { tg.requestFullscreen(); } catch (e) {}
-  };
 
-  document.addEventListener("touchstart", requestFsOnce, { once: true, passive: true });
-  document.addEventListener("click", requestFsOnce, { once: true });
 
   function applyViewportVars() {
     const h  = (tg.viewportHeight || window.innerHeight) | 0;
